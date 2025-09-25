@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Contracts\V1\Category;
+
+use App\DTO\V1\Category\CreateCategoryDTO;
+use App\DTO\V1\Category\UpdateCategoryDTO;
+use App\Exceptions\V1\Category\CategorySlugAlreadyExistsException;
+use App\Exceptions\V1\Category\PositionDuplicateException;
+use App\Models\V1\Category;
+use App\Support\Results\MediaResult;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
+
+interface CategoryServiceInterface
+{
+
+    /**
+     * @throws CategorySlugAlreadyExistsException
+     */
+    public function create(CreateCategoryDTO $data): Category;
+
+    /**
+     * @throws CategorySlugAlreadyExistsException
+     */
+    public function update(Category $category, UpdateCategoryDTO $data): Category;
+
+    public function delete(Category $category): void;
+
+    public function toggleActivation(Category $category, bool $isActive): Category;
+
+    /**
+     * @param array<int,int> $idPositionMap
+     * @throws PositionDuplicateException
+     */
+    public function reorder(int $storeId, array $idPositionMap): void;
+
+    /**
+     * @param array $filters search,parent_id,is_active,with(array)
+     */
+    public function list(int $storeId, array $filters = [], int $perPage = 25): LengthAwarePaginator;
+
+    public function uploadImage(Category $category, UploadedFile|string $file, string $type): MediaResult;
+
+    public function deleteImage(Category $category, ?int $mediaId = null): void;
+
+}
