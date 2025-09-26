@@ -1,0 +1,586 @@
+openapi: 3.0.3
+info:
+  title: PixelAura API - V1 (Full)
+  version: "1.0.0"
+  description: |
+    Contrat OpenAPI regroupant toutes les routes V1 (catalog, media, members, orders, payments, kds, devices, abilities, audit).
+    Conventions importantes:
+      - Auth: Bearer token (Sanctum), device-first.
+      - Header X-Store-Sku obligatoire pour routes liées au store.
+      - Idempotency-Key header requis pour POST /orders et POST /orders/{id}/payments.
+      - ETag/If-None-Match used on /v1/catalog/compact.
+      - x-abilities: declared per path (dot-notation).
+servers:
+  - url: https://api.example.com
+  - url: http://localhost:8000
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+
+  parameters:
+    StoreSku:
+      name: X-Store-Sku
+      in: header
+      required: true
+      schema:
+        type: string
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      schema:
+        type: string
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: object }
+            correlation_id: { type: string }
+
+    CatalogCompactResponse:
+      type: object
+      properties:
+        menu_version: { type: integer }
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              name: { type: string }
+              slug: { type: string }
+              is_active: { type: boolean }
+              position: { type: integer }
+              thumbnail: { type: string }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              category_id: { type: integer }
+              sku: { type: string }
+              name: { type: string }
+              base_price_cents: { type: integer }
+              currency: { type: string }
+              is_active: { type: boolean }
+              variants:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+                    price_delta_cents: { type: integer }
+              option_lists:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id: { type: integer }
+                    name: { type: string }
+                    min_select: { type: integer }
+                    max_select: { type: integer }
+              thumbnail: { type: string }
+
+    MediaResource:
+      type: object
+      properties:
+        id: { type: integer }
+        collection: { type: string }
+        disk: { type: string }
+        file_name: { type: string }
+        mime_type: { type: string }
+        size_bytes: { type: integer }
+        urls:
+          type: object
+          properties:
+            original: { type: string }
+            thumbnail: { type: string }
+            banner: { type: string }
+            icon: { type: string }
+
+    Member:
+      type: object
+      properties:
+        id: { type: integer }
+        store_id: { type: integer }
+        name: { type: string }
+        role: { type: string }
+        code: { type: string }
+        is_active: { type: boolean }
+        permissions:
+          type: array
+          items: { type: string }
+        last_login_at: { type: string, format: date-time }
+
+    OrderItem:
+      type: object
+      properties:
+        id: { type: integer }
+        item_id: { type: integer }
+        item_name: { type: string }
+        qty: { type: integer }
+        unit_price_cents: { type: integer }
+        variant_id: { type: integer }
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              option_id: { type: integer }
+              name: { type: string }
+              price_delta_cents: { type: integer }
+        total_cents: { type: integer }
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        store_id: { type: integer }
+        channel: { type: string }
+        status:
+          type: string
+          enum: [created, accepted, in_preparation, ready, served, picked_up, cancelled, refunded]
+        totals_cents:
+          type: object
+          properties:
+            subtotal: { type: integer }
+            tax: { type: integer }
+            total: { type: integer }
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/OrderItem" }
+        created_at: { type: string, format: date-time }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        order_id: { type: integer }
+        method: { type: string }
+        amount_cents: { type: integer }
+        change_cents: { type: integer }
+        status: { type: string }
+        captured_at: { type: string, format: date-time }
+
+paths:
+  /v1/catalog/compact:
+    get:
+      summary: Catalog compact (Kiosk/POS)
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+        - $ref: '#/components/parameters/IfNoneMatch'
+        - in: query
+          name: channel
+          schema:
+            type: string
+            enum: [kiosk,pos,web]
+        - in: query
+          name: lang
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          headers:
+            ETag:
+              schema: { type: string }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CatalogCompactResponse' }
+        "304": { description: Not Modified }
+      x-abilities: ["menu.read"]
+
+  /v1/{type}/{modelBinding}/media/main:
+    get:
+      summary: Get main image resource for an entity
+      parameters:
+        - in: path
+          name: type
+          schema: { type: string }
+        - in: path
+          name: modelBinding
+          schema:
+            oneOf:
+              - type: integer
+              - type: string
+        - $ref: '#/components/parameters/StoreSku'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MediaResource' }
+      x-abilities: ["categories.read"]
+    post:
+      summary: Upload/replace main image
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string }
+      responses:
+        "201": { description: Created }
+      x-abilities: ["category.update"]
+    delete:
+      summary: Delete main image
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+      responses:
+        "204": { description: Deleted }
+      x-abilities: ["category.update"]
+
+  /v1/{type}/{modelBinding}/media/gallery:
+    get:
+      summary: List gallery
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+      responses:
+        "200": { description: OK }
+      x-abilities: ["categories.read"]
+    post:
+      summary: Add image to gallery
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "201": { description: Created }
+      x-abilities: ["category.update"]
+
+  /v1/{type}/{modelBinding}/media/gallery/{mediaId}:
+    delete:
+      summary: Delete a gallery image
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+        - in: path
+          name: mediaId
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+      x-abilities: ["category.update"]
+
+  /v1/members/login:
+    post:
+      summary: Member login (code + PIN)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, pin]
+              properties:
+                code: { type: string }
+                pin: { type: string }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["members.auth"]
+
+  /v1/members/logout:
+    post:
+      summary: Member logout
+      responses:
+        "204": { description: Logged out }
+      x-abilities: ["members.logout"]
+
+  /v1/members/me:
+    get:
+      summary: Current member profile
+      responses:
+        "200": { description: OK }
+      x-abilities: []
+
+  /v1/members/{id}/pin:
+    post:
+      summary: Change member PIN
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                current_pin: { type: string }
+                new_pin: { type: string }
+      responses:
+        "204": { description: Updated }
+      x-abilities: ["members.update"]
+
+  /v1/members:
+    get:
+      summary: List members (BO)
+      responses:
+        "200": { description: OK }
+      x-abilities: ["members.read"]
+    post:
+      summary: Create member (BO)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, role]
+      responses:
+        "201": { description: Created }
+      x-abilities: ["members.create"]
+
+  /v1/members/{id}:
+    get:
+      summary: Get member
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["members.read"]
+    patch:
+      summary: Update member
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200": { description: OK }
+      x-abilities: ["members.update"]
+    delete:
+      summary: Delete member
+      responses:
+        "204": { description: Deleted }
+      x-abilities: ["members.delete"]
+
+  /v1/me/abilities:
+    get:
+      summary: Resolved abilities for current subject (device ± member)
+      responses:
+        "200": { description: OK }
+      x-abilities: []
+
+  /v1/orders:
+    post:
+      summary: Create order (Idempotent)
+      parameters:
+        - $ref: '#/components/parameters/StoreSku'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel, items]
+      responses:
+        "201": { description: Created }
+      x-abilities: ["order.create"]
+
+  /v1/orders/{id}:
+    get:
+      summary: Get order
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["order.read"]
+
+  /v1/orders/{id}/status:
+    patch:
+      summary: Update order status
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: string
+      responses:
+        "200": { description: OK }
+      x-abilities: ["order.status.set"]
+
+  /v1/orders/{id}/payments:
+    post:
+      summary: Capture cash payment (Idempotent)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, amount_cents]
+      responses:
+        "201": { description: Created }
+      x-abilities: ["payment.capture"]
+
+  /v1/sessions/open:
+    post:
+      summary: Open cash session
+      responses:
+        "201": { description: Created }
+      x-abilities: ["session.open"]
+
+  /v1/sessions/close:
+    post:
+      summary: Close cash session
+      responses:
+        "200": { description: OK }
+      x-abilities: ["session.close"]
+
+  /v1/drawer/open:
+    post:
+      summary: Open cash drawer
+      responses:
+        "204": { description: Opened }
+      x-abilities: ["drawer.open"]
+
+  /v1/drawer/payout:
+    post:
+      summary: Drawer payout (cash out)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_cents, reason]
+      responses:
+        "201": { description: Recorded }
+      x-abilities: ["drawer.payout"]
+
+  /v1/drawer/payin:
+    post:
+      summary: Drawer payin (cash in)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount_cents, reason]
+      responses:
+        "201": { description: Recorded }
+      x-abilities: ["drawer.payin"]
+
+  /v1/kds/tickets/{id}/bump:
+    post:
+      summary: Bump KDS ticket status
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to:
+                  type: string
+      responses:
+        "200": { description: OK }
+      x-abilities: ["kds.update"]
+
+  /v1/kds/tickets/{id}/undo:
+    post:
+      summary: Undo KDS ticket
+      parameters:
+        - in: path
+          name: id
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["kds.update"]
+
+  /v1/devices/{id}/heartbeat:
+    post:
+      summary: Device heartbeat
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "204": { description: OK }
+      x-abilities: ["device.sync"]
+
+  /broadcasting/auth:
+    post:
+      summary: Pusher/Soketi channel auth (broadcasting)
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                channel_name: { type: string }
+                socket_id: { type: string }
+      responses:
+        "200": { description: OK }
+
+  /v1/audit:
+    get:
+      summary: Search audit events
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer }
+        - in: query
+          name: limit
+          schema: { type: integer }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["audit.read"]
+
+  /v1/audit/export:
+    get:
+      summary: Export audit CSV/JSON
+      parameters:
+        - in: query
+          name: format
+          schema: { type: string, enum: [csv,json] }
+      responses:
+        "200": { description: OK }
+      x-abilities: ["audit.export"]

@@ -1,0 +1,408 @@
+openapi: 3.0.3
+info:
+  title: Item Attachments API
+  version: 1.0.0
+
+paths:
+  /items/{item}/ingredients:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+    get:
+      summary: Lister les ingrédients d'un article
+      tags: [Item Attachments]
+      responses:
+        '200':
+          description: Liste des ingrédients attachés à l'article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemIngredientsResponse'
+        '404':
+          description: Article non trouvé
+      x-abilities:
+        - items:read
+    post:
+      summary: Attacher des ingrédients à un article
+      tags: [Item Attachments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemIngredientsAttachRequest'
+      responses:
+        '200':
+          description: Ingrédients attachés avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemIngredientsResponse'
+        '404':
+          description: Article ou ingrédient non trouvé
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:update
+
+  /items/{item}/ingredients/{ingredient}:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+      - in: path
+        name: ingredient
+        required: true
+        schema: { type: integer }
+        description: ID de l'ingrédient
+    delete:
+      summary: Détacher un ingrédient d'un article
+      tags: [Item Attachments]
+      responses:
+        '204':
+          description: Ingrédient détaché avec succès
+        '404':
+          description: Article ou ingrédient non trouvé ou relation inexistante
+      x-abilities:
+        - items:update
+
+  /items/{item}/options:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+    get:
+      summary: Lister les options d'un article
+      tags: [Item Attachments]
+      responses:
+        '200':
+          description: Liste des options attachées à l'article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemOptionsResponse'
+        '404':
+          description: Article non trouvé
+      x-abilities:
+        - items:read
+    post:
+      summary: Attacher des options à un article
+      tags: [Item Attachments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemOptionsAttachRequest'
+      responses:
+        '200':
+          description: Options attachées avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemOptionsResponse'
+        '404':
+          description: Article ou option non trouvé
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:update
+
+  /items/{item}/options/{option}:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+      - in: path
+        name: option
+        required: true
+        schema: { type: integer }
+        description: ID de l'option
+    delete:
+      summary: Détacher une option d'un article
+      tags: [Item Attachments]
+      responses:
+        '204':
+          description: Option détachée avec succès
+        '404':
+          description: Article ou option non trouvé ou relation inexistante
+      x-abilities:
+        - items:update
+
+  /items/{item}/options-lists:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+    get:
+      summary: Lister les listes d'options d'un article
+      tags: [Item Attachments]
+      responses:
+        '200':
+          description: Liste des listes d'options attachées à l'article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemOptionListsResponse'
+        '404':
+          description: Article non trouvé
+      x-abilities:
+        - items:read
+    post:
+      summary: Attacher des listes d'options à un article
+      tags: [Item Attachments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemOptionListsAttachRequest'
+      responses:
+        '200':
+          description: Listes d'options attachées avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemOptionListsResponse'
+        '404':
+          description: Article ou liste d'options non trouvé
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:update
+
+  /items/{item}/options-lists/{option_list}:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+      - in: path
+        name: option_list
+        required: true
+        schema: { type: integer }
+        description: ID de la liste d'options
+    delete:
+      summary: Détacher une liste d'options d'un article
+      tags: [Item Attachments]
+      responses:
+        '204':
+          description: Liste d'options détachée avec succès
+        '404':
+          description: Article ou liste d'options non trouvé ou relation inexistante
+      x-abilities:
+        - items:update
+
+components:
+  schemas:
+    ItemIngredientsAttachRequest:
+      type: object
+      required:
+        - ingredient_ids
+      properties:
+        ingredient_ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+
+    ItemIngredientsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientDetail'
+        message:
+          type: string
+          example: "Ingrédients attachés avec succès"
+
+    IngredientDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Steak haché"
+        description:
+          type: string
+          example: "Steak haché de boeuf 100% pur"
+        price:
+          type: number
+          format: float
+          example: 2.50
+        is_active:
+          type: boolean
+          example: true
+        pivot:
+          type: object
+          properties:
+            item_id:
+              type: integer
+              example: 1
+            ingredient_id:
+              type: integer
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    ItemOptionsAttachRequest:
+      type: object
+      required:
+        - option_ids
+      properties:
+        option_ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+
+    ItemOptionsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionDetail'
+        message:
+          type: string
+          example: "Options attachées avec succès"
+
+    OptionDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauce piquante"
+        description:
+          type: string
+          example: "Sauce piquante maison"
+        price:
+          type: number
+          format: float
+          example: 1.00
+        is_active:
+          type: boolean
+          example: true
+        pivot:
+          type: object
+          properties:
+            item_id:
+              type: integer
+              example: 1
+            option_id:
+              type: integer
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    ItemOptionListsAttachRequest:
+      type: object
+      required:
+        - option_list_ids
+      properties:
+        option_list_ids:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
+
+    ItemOptionListsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionListDetail'
+        message:
+          type: string
+          example: "Listes d'options attachées avec succès"
+
+    OptionListDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauces"
+        description:
+          type: string
+          example: "Choisissez vos sauces préférées"
+        min_selection:
+          type: integer
+          example: 0
+        max_selection:
+          type: integer
+          example: 3
+        is_active:
+          type: boolean
+          example: true
+        pivot:
+          type: object
+          properties:
+            item_id:
+              type: integer
+              example: 1
+            option_list_id:
+              type: integer
+              example: 1
+            created_at:
+              type: string
+              format: date-time
+            updated_at:
+              type: string
+              format: date-time
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Les données fournies ne sont pas valides."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            ingredient_ids: ["La liste d'ingrédients est requise."]

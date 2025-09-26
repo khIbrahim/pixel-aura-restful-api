@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: Items API
+  version: 1.0.0
+
+paths:
+  /items:
+    get:
+      summary: Lister les articles
+      tags: [Items]
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Recherche par nom
+        - in: query
+          name: category_id
+          schema: { type: integer }
+          description: Filtrer par catégorie
+        - in: query
+          name: is_active
+          schema: { type: boolean }
+          description: Filtrer par statut d'activation
+        - in: query
+          name: with
+          schema:
+            type: array
+            items: { type: string }
+            example: ["category", "options", "ingredients"]
+          description: Relations à charger
+          style: form
+          explode: true
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25, minimum: 1 }
+          description: Nombre d'éléments par page
+      responses:
+        '200':
+          description: Liste paginée des articles
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemPaginatedResponse'
+      x-abilities:
+        - items:read
+    post:
+      summary: Créer un article
+      tags: [Items]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemCreateRequest'
+      responses:
+        '201':
+          description: Article créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:create
+
+  /items/{item}:
+    parameters:
+      - in: path
+        name: item
+        required: true
+        schema: { type: integer }
+        description: ID de l'article
+    get:
+      summary: Obtenir un article spécifique
+      tags: [Items]
+      parameters:
+        - in: query
+          name: with
+          schema:
+            type: array
+            items: { type: string }
+            example: ["category", "options", "ingredients"]
+          description: Relations à charger
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Détails de l'article
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '404':
+          description: Article non trouvé
+      x-abilities:
+        - items:read
+    put:
+      summary: Mettre à jour un article
+      tags: [Items]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdateRequest'
+      responses:
+        '200':
+          description: Article mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '404':
+          description: Article non trouvé
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:update
+    patch:
+      summary: Mettre à jour partiellement un article
+      tags: [Items]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemUpdateRequest'
+      responses:
+        '200':
+          description: Article mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '404':
+          description: Article non trouvé
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:update
+
+components:
+  schemas:
+    ItemCreateRequest:
+      type: object
+      required:
+        - name
+        - description
+        - category_id
+        - price
+      properties:
+        name:
+          type: string
+          example: "Cheeseburger Deluxe"
+        description:
+          type: string
+          example: "Notre burger signature avec du fromage fondu"
+        category_id:
+          type: integer
+          example: 1
+        price:
+          type: number
+          format: float
+          example: 9.99
+        is_active:
+          type: boolean
+          default: true
+        options:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        ingredients:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        option_lists:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
+
+    ItemUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Cheeseburger Deluxe"
+        description:
+          type: string
+          example: "Notre burger signature avec du fromage fondu"
+        category_id:
+          type: integer
+          example: 1
+        price:
+          type: number
+          format: float
+          example: 9.99
+        is_active:
+          type: boolean
+          example: true
+        options:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        ingredients:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        option_lists:
+          type: array
+          items:
+            type: integer
+          example: [1, 2]
+
+    ItemResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cheeseburger Deluxe"
+        description:
+          type: string
+          example: "Notre burger signature avec du fromage fondu"
+        price:
+          type: number
+          format: float
+          example: 9.99
+        is_active:
+          type: boolean
+          example: true
+        category_id:
+          type: integer
+          example: 1
+        category:
+          $ref: '#/components/schemas/CategorySimple'
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/IngredientSimple'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionSimple'
+        option_lists:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionListSimple'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        main_image:
+          type: string
+          format: url
+          nullable: true
+        gallery:
+          type: array
+          items:
+            type: string
+            format: url
+
+    ItemPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 100
+            last_page:
+              type: integer
+              example: 4
+
+    CategorySimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Burgers"
+
+    IngredientSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Steak haché"
+
+    OptionSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauce piquante"
+
+    OptionListSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cuissons"
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Les données fournies ne sont pas valides."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name: ["Le champ nom est obligatoire."]
+            price: ["Le prix doit être supérieur à 0."]

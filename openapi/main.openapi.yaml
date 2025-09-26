@@ -1,0 +1,141 @@
+openapi: 3.0.3
+info:
+  title: Pixel Laravel REST API
+  description: API complète pour la gestion des magasins, catégories, articles, ingrédients et options
+  version: 1.0.0
+  contact:
+    name: Support API
+    email: support@pixel-api.com
+
+servers:
+  - url: https://api.pixel-laravel.com
+    description: Production
+  - url: https://staging-api.pixel-laravel.com
+    description: Staging
+  - url: http://localhost:8000
+    description: Développement local
+
+paths:
+  # Authentication & User
+  /api/v1/me:
+    $ref: './paths/auth.yaml#/me'
+
+  # Store Members
+  /api/v1/stores/{store}/members:
+    $ref: './paths/store-members.yaml#/store-members-list'
+  /api/v1/stores/{store}/members/{store_member}:
+    $ref: './paths/store-members.yaml#/store-members-detail'
+  /api/v1/stores/{store}/members/import:
+    $ref: './paths/store-members.yaml#/store-members-import'
+  /api/v1/stores/{store}/members/export:
+    $ref: './paths/store-members.yaml#/store-members-export'
+  /api/v1/stores/{store}/members/search:
+    $ref: './paths/store-members.yaml#/store-members-search'
+  /api/v1/store-members/{store_member}:
+    $ref: './paths/store-members.yaml#/store-member-operations'
+  /api/v1/stores/{store}/members/{store_member}/authenticate:
+    $ref: './paths/store-members.yaml#/store-member-authenticate'
+  /api/v1/members/logout:
+    $ref: './paths/store-members.yaml#/store-member-logout'
+  /api/v1/members/me:
+    $ref: './paths/store-members.yaml#/store-member-me'
+
+  # Categories
+  /api/v1/categories:
+    $ref: './paths/categories.yaml#/categories-list'
+  /api/v1/categories/{category}:
+    $ref: './paths/categories.yaml#/categories-detail'
+  /api/v1/categories/reorder:
+    $ref: './paths/categories.yaml#/categories-reorder'
+  /api/v1/categories/{category}/activation:
+    $ref: './paths/categories.yaml#/categories-activation'
+  /api/v1/categories/{category}/images:
+    $ref: './paths/categories.yaml#/categories-images'
+  /api/v1/categories/{category}/images/{image}:
+    $ref: './paths/categories.yaml#/categories-images-detail'
+
+  # Items
+  /api/v1/items:
+    $ref: './paths/items.yaml#/items-list'
+  /api/v1/items/{item}:
+    $ref: './paths/items.yaml#/items-detail'
+
+  # Ingredients
+  /api/v1/ingredients:
+    $ref: './paths/ingredients.yaml#/ingredients-list'
+  /api/v1/ingredients/{ingredient}:
+    $ref: './paths/ingredients.yaml#/ingredients-detail'
+
+  # Options
+  /api/v1/options:
+    $ref: './paths/options.yaml#/options-list'
+  /api/v1/options/{option}:
+    $ref: './paths/options.yaml#/options-detail'
+
+  # Option Lists
+  /api/v1/option-lists:
+    $ref: './paths/option-lists.yaml#/option-lists-list'
+  /api/v1/option-lists/{optionList}:
+    $ref: './paths/option-lists.yaml#/option-lists-detail'
+
+  # Item Attachments
+  /api/v1/items/{item}/ingredients:
+    $ref: './paths/item-attachments.yaml#/item-ingredients'
+  /api/v1/items/{item}/ingredients/{ingredient}:
+    $ref: './paths/item-attachments.yaml#/item-ingredients-detail'
+  /api/v1/items/{item}/options:
+    $ref: './paths/item-attachments.yaml#/item-options'
+  /api/v1/items/{item}/options/{option}:
+    $ref: './paths/item-attachments.yaml#/item-options-detail'
+  /api/v1/items/{item}/options-lists:
+    $ref: './paths/item-attachments.yaml#/item-option-lists'
+  /api/v1/items/{item}/options-lists/{option_list}:
+    $ref: './paths/item-attachments.yaml#/item-option-lists-detail'
+
+  # Media
+  /api/v1/{type}/{modelBinding}/media/main:
+    $ref: './paths/media.yaml#/media-main'
+  /api/v1/{type}/{modelBinding}/media/gallery:
+    $ref: './paths/media.yaml#/media-gallery'
+  /api/v1/{type}/{modelBinding}/media/gallery/{media}:
+    $ref: './paths/media.yaml#/media-gallery-detail'
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token d'authentification Sanctum
+
+  parameters:
+    $ref: './components/parameters.yaml'
+
+  schemas:
+    $ref: './components/schemas.yaml'
+
+  responses:
+    $ref: './components/responses.yaml'
+
+security:
+  - sanctum: []
+
+tags:
+  - name: Authentication
+    description: Authentification et gestion des utilisateurs
+  - name: Store Members
+    description: Gestion des membres du magasin
+  - name: Categories
+    description: Gestion des catégories
+  - name: Items
+    description: Gestion des articles
+  - name: Ingredients
+    description: Gestion des ingrédients
+  - name: Options
+    description: Gestion des options
+  - name: Option Lists
+    description: Gestion des listes d'options
+  - name: Item Attachments
+    description: Liaisons entre articles et ingrédients/options
+  - name: Media
+    description: Gestion des médias et images

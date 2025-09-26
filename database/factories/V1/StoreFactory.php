@@ -4,6 +4,7 @@ namespace Database\Factories\V1;
 
 use App\Models\V1\Store;
 use App\Models\V1\User;
+use App\Services\V1\Item\SkuGeneratorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 use Symfony\Component\Intl\Currencies;
@@ -21,7 +22,7 @@ class StoreFactory extends Factory
 
         return [
             'name'            => $name,
-            'slug'            => Str::slug($name) . '-' . Str::random(5),
+            'sku'             => app(SkuGeneratorService::class)->generateSku($name, -1),
             'owner_id'        => User::factory(),
             'phone'           => $this->faker->phoneNumber,
             'email'           => $this->faker->unique()->safeEmail,

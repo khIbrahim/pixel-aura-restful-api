@@ -1,0 +1,569 @@
+openapi: 3.0.3
+info:
+  title: Categories API
+  version: 1.0.0
+
+paths:
+  /categories:
+    get:
+      summary: Lister les catégories
+      tags: [Categories]
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Recherche par nom
+        - in: query
+          name: parent_id
+          schema: { type: integer, nullable: true }
+          description: Filtrer par catégorie parente (null pour les catégories racines)
+        - in: query
+          name: is_active
+          schema: { type: boolean }
+          description: Filtrer par statut d'activation
+        - in: query
+          name: with
+          schema:
+            type: array
+            items: { type: string }
+            example: ["parent", "children", "items"]
+          description: Relations à charger
+          style: form
+          explode: true
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25, minimum: 1 }
+          description: Nombre d'éléments par page.
+      responses:
+        '200':
+          description: Liste paginée des catégories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryPaginatedResponse'
+      x-abilities:
+        - categories:read
+    post:
+      summary: Créer une catégorie
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateRequest'
+      responses:
+        '201':
+          description: Catégorie créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateResponse'
+        '409':
+          description: Conflit - Slug déjà existant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - categories:create
+
+  /categories/{category}:
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema: { type: integer }
+        description: ID de la catégorie
+    get:
+      summary: Obtenir une catégorie spécifique
+      tags: [Categories]
+      parameters:
+        - in: query
+          name: with
+          schema:
+            type: array
+            items: { type: string }
+            example: ["parent", "children", "items"]
+          description: Relations à charger
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Détails de la catégorie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Catégorie non trouvée
+      x-abilities:
+        - categories:read
+    put:
+      summary: Mettre à jour une catégorie
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Catégorie mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Catégorie non trouvée
+        '409':
+          description: Conflit - Slug déjà existant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - categories:update
+    patch:
+      summary: Mettre à jour partiellement une catégorie
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdateRequest'
+      responses:
+        '200':
+          description: Catégorie mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Catégorie non trouvée
+        '409':
+          description: Conflit - Slug déjà existant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - categories:update
+    delete:
+      summary: Supprimer une catégorie
+      tags: [Categories]
+      responses:
+        '204':
+          description: Catégorie supprimée
+        '404':
+          description: Catégorie non trouvée
+      x-abilities:
+        - categories:delete
+
+  /categories/reorder:
+    patch:
+      summary: Réorganiser l'ordre des catégories
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryReorderRequest'
+      responses:
+        '200':
+          description: Catégories réorganisées
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryReorderResponse'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+        '409':
+          description: Conflit - Position dupliquée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictError'
+      x-abilities:
+        - categories:reorder
+
+  /categories/{category}/activation:
+    patch:
+      summary: Activer ou désactiver une catégorie
+      tags: [Categories]
+      parameters:
+        - in: path
+          name: category
+          required: true
+          schema: { type: integer }
+          description: ID de la catégorie
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryActivationRequest'
+      responses:
+        '200':
+          description: Statut d'activation mis à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          description: Catégorie non trouvée
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - categories:activate
+
+  /categories/{category}/images:
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema: { type: integer }
+        description: ID de la catégorie
+    post:
+      summary: Ajouter une image à une catégorie
+      tags: [Categories]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryImageUploadRequest'
+      responses:
+        '201':
+          description: Image téléchargée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImageResponse'
+        '404':
+          description: Catégorie non trouvée
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - categories:update
+    get:
+      summary: Lister les images d'une catégorie
+      tags: [Categories]
+      responses:
+        '200':
+          description: Liste des images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryImagesResponse'
+        '404':
+          description: Catégorie non trouvée
+      x-abilities:
+        - categories:read
+
+  /categories/{category}/images/{image}:
+    parameters:
+      - in: path
+        name: category
+        required: true
+        schema: { type: integer }
+        description: ID de la catégorie
+      - in: path
+        name: image
+        required: true
+        schema: { type: integer }
+        description: ID de l'image
+    delete:
+      summary: Supprimer une image d'une catégorie
+      tags: [Categories]
+      responses:
+        '204':
+          description: Image supprimée
+        '404':
+          description: Catégorie ou image non trouvée
+      x-abilities:
+        - categories:update
+
+components:
+  schemas:
+    CategoryCreateRequest:
+      type: object
+      required:
+        - name
+        - slug
+      properties:
+        name:
+          type: string
+          example: "Burgers"
+        slug:
+          type: string
+          example: "burgers"
+        description:
+          type: string
+          example: "Nos délicieux burgers faits maison"
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        is_active:
+          type: boolean
+          default: true
+        position:
+          type: integer
+          nullable: true
+          example: null
+
+    CategoryUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Burgers"
+        slug:
+          type: string
+          example: "burgers"
+        description:
+          type: string
+          example: "Nos délicieux burgers faits maison"
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        is_active:
+          type: boolean
+        position:
+          type: integer
+          nullable: true
+
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Burgers"
+        slug:
+          type: string
+          example: "burgers"
+        description:
+          type: string
+          example: "Nos délicieux burgers faits maison"
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        is_active:
+          type: boolean
+          example: true
+        position:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        main_image:
+          type: string
+          format: url
+          nullable: true
+        parent:
+          $ref: '#/components/schemas/CategorySimple'
+          nullable: true
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySimple'
+        items_count:
+          type: integer
+          example: 5
+
+    CategoryCreateResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/CategoryResponse'
+        message:
+          type: string
+          example: "Catégorie créée avec succès"
+
+    CategoryPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryResponse'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 10
+            last_page:
+              type: integer
+              example: 1
+
+    CategorySimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Burgers"
+        slug:
+          type: string
+          example: "burgers"
+        position:
+          type: integer
+          example: 1
+        is_active:
+          type: boolean
+          example: true
+
+    CategoryReorderRequest:
+      type: object
+      required:
+        - order
+      properties:
+        order:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+              - position
+            properties:
+              id:
+                type: integer
+                example: 1
+              position:
+                type: integer
+                example: 2
+          example:
+            - id: 1
+              position: 2
+            - id: 2
+              position: 1
+
+    CategoryReorderResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategorySimple'
+        message:
+          type: string
+          example: "Catégories réorganisées avec succès"
+
+    CategoryActivationRequest:
+      type: object
+      required:
+        - is_active
+      properties:
+        is_active:
+          type: boolean
+          example: true
+
+    CategoryImageUploadRequest:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          format: binary
+          description: Fichier image (jpeg, png, gif)
+
+    CategoryImagesResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImageResponse'
+
+    ImageResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        url:
+          type: string
+          format: url
+          example: "https://example.com/storage/images/categories/1/image.jpg"
+        created_at:
+          type: string
+          format: date-time
+
+    ConflictError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Un conflit est survenu lors du traitement de la requête"
+        error:
+          type: string
+          example: "Le slug 'burgers' existe déjà pour une autre catégorie"
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Les données fournies ne sont pas valides."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name: ["Le champ nom est obligatoire."]
+            slug: ["Le slug doit être unique."]

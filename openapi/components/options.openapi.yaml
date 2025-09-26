@@ -1,0 +1,270 @@
+openapi: 3.0.3
+info:
+  title: Options API
+  version: 1.0.0
+
+paths:
+  /options:
+    get:
+      summary: Lister les options
+      tags: [Options]
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Recherche par nom
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25, minimum: 1 }
+          description: Nombre d'éléments par page
+      responses:
+        '200':
+          description: Liste paginée des options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionPaginatedResponse'
+      x-abilities:
+        - option:read
+    post:
+      summary: Créer une option
+      tags: [Options]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptionCreateRequest'
+      responses:
+        '201':
+          description: Option créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - option:create
+
+  /options/{option}:
+    parameters:
+      - in: path
+        name: option
+        required: true
+        schema: { type: integer }
+        description: ID de l'option
+    get:
+      summary: Obtenir une option spécifique
+      tags: [Options]
+      responses:
+        '200':
+          description: Détails de l'option
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '404':
+          description: Option non trouvée
+      x-abilities:
+        - option:read
+    put:
+      summary: Mettre à jour une option
+      tags: [Options]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptionUpdateRequest'
+      responses:
+        '200':
+          description: Option mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '404':
+          description: Option non trouvée
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - option:update
+    patch:
+      summary: Mettre à jour partiellement une option
+      tags: [Options]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptionUpdateRequest'
+      responses:
+        '200':
+          description: Option mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '404':
+          description: Option non trouvée
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - option:update
+    delete:
+      summary: Supprimer une option
+      tags: [Options]
+      responses:
+        '204':
+          description: Option supprimée
+        '404':
+          description: Option non trouvée
+      x-abilities:
+        - option:delete
+
+components:
+  schemas:
+    OptionCreateRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Sauce piquante"
+        description:
+          type: string
+          example: "Sauce piquante maison"
+        price:
+          type: number
+          format: float
+          example: 1.00
+        is_active:
+          type: boolean
+          default: true
+
+    OptionUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Sauce piquante"
+        description:
+          type: string
+          example: "Sauce piquante maison"
+        price:
+          type: number
+          format: float
+          example: 1.00
+        is_active:
+          type: boolean
+
+    OptionResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauce piquante"
+        description:
+          type: string
+          example: "Sauce piquante maison"
+        price:
+          type: number
+          format: float
+          example: 1.00
+        is_active:
+          type: boolean
+          example: true
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemSimple'
+        option_lists:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionListSimple'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        main_image:
+          type: string
+          format: url
+          nullable: true
+
+    OptionPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionResponse'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 30
+            last_page:
+              type: integer
+              example: 2
+
+    ItemSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cheeseburger Deluxe"
+
+    OptionListSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauces"
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Les données fournies ne sont pas valides."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name: ["Le champ nom est obligatoire."]
+            price: ["Le prix doit être supérieur à 0."]

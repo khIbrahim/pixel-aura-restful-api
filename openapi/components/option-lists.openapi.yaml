@@ -1,0 +1,277 @@
+openapi: 3.0.3
+info:
+  title: Option Lists API
+  version: 1.0.0
+
+paths:
+  /option-lists:
+    get:
+      summary: Lister les listes d'options
+      tags: [Option Lists]
+      parameters:
+        - in: query
+          name: search
+          schema: { type: string }
+          description: Recherche par nom
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 25, minimum: 1 }
+          description: Nombre d'éléments par page
+      responses:
+        '200':
+          description: Liste paginée des listes d'options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListPaginatedResponse'
+      x-abilities:
+        - option-list:read
+    post:
+      summary: Créer une liste d'options
+      tags: [Option Lists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptionListCreateRequest'
+      responses:
+        '201':
+          description: Liste d'options créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListResponse'
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - option-list:create
+
+  /option-lists/{optionList}:
+    parameters:
+      - in: path
+        name: optionList
+        required: true
+        schema: { type: integer }
+        description: ID de la liste d'options
+    get:
+      summary: Obtenir une liste d'options spécifique
+      tags: [Option Lists]
+      parameters:
+        - in: query
+          name: with
+          schema:
+            type: array
+            items: { type: string }
+            example: ["options"]
+          description: Relations à charger
+          style: form
+          explode: true
+      responses:
+        '200':
+          description: Détails de la liste d'options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListResponse'
+        '404':
+          description: Liste d'options non trouvée
+      x-abilities:
+        - option-list:read
+    put:
+      summary: Mettre à jour une liste d'options
+      tags: [Option Lists]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptionListUpdateRequest'
+      responses:
+        '200':
+          description: Liste d'options mise à jour
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListResponse'
+        '404':
+          description: Liste d'options non trouvée
+        '422':
+          description: Erreur de validation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - option-list:update
+    delete:
+      summary: Supprimer une liste d'options
+      tags: [Option Lists]
+      responses:
+        '204':
+          description: Liste d'options supprimée
+        '404':
+          description: Liste d'options non trouvée
+      x-abilities:
+        - option-list:delete
+
+components:
+  schemas:
+    OptionListCreateRequest:
+      type: object
+      required:
+        - name
+        - min_selection
+        - max_selection
+      properties:
+        name:
+          type: string
+          example: "Sauces"
+        description:
+          type: string
+          example: "Choisissez vos sauces préférées"
+        min_selection:
+          type: integer
+          minimum: 0
+          example: 0
+        max_selection:
+          type: integer
+          minimum: 1
+          example: 3
+        options:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        is_active:
+          type: boolean
+          default: true
+
+    OptionListUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Sauces"
+        description:
+          type: string
+          example: "Choisissez vos sauces préférées"
+        min_selection:
+          type: integer
+          minimum: 0
+          example: 0
+        max_selection:
+          type: integer
+          minimum: 1
+          example: 3
+        options:
+          type: array
+          items:
+            type: integer
+          example: [1, 2, 3]
+        is_active:
+          type: boolean
+
+    OptionListResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauces"
+        description:
+          type: string
+          example: "Choisissez vos sauces préférées"
+        min_selection:
+          type: integer
+          example: 0
+        max_selection:
+          type: integer
+          example: 3
+        is_active:
+          type: boolean
+          example: true
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionSimple'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemSimple'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    OptionListPaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptionListResponse'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 10
+            last_page:
+              type: integer
+              example: 1
+
+    OptionSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauce piquante"
+        price:
+          type: number
+          format: float
+          example: 1.00
+
+    ItemSimple:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Cheeseburger Deluxe"
+
+    ValidationError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Les données fournies ne sont pas valides."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name: ["Le champ nom est obligatoire."]
+            min_selection: ["La sélection minimale doit être un nombre positif."]
+            max_selection: ["La sélection maximale doit être supérieure à la sélection minimale."]
