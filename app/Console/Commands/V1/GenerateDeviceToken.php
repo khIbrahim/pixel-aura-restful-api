@@ -84,7 +84,7 @@ class GenerateDeviceToken extends Command
         $this->line("• Le token expirera le: {$result['expires_at']}");
 
         $this->info("\nAjoutez dans votre fichier .env:");
-        $this->line("STORE_SLUG=$store->sku");
+        $this->line("STORE_SKU=$store->sku");
         $this->line("DEVICE_TOKEN={$result['token']}");
         $this->line("DEVICE_FINGERPRINT={$result['fingerprint']}");
 
@@ -118,7 +118,7 @@ class GenerateDeviceToken extends Command
         }
 
         $this->table(
-            ['#', 'Nom', 'Slug', 'Devices'],
+            ['#', 'Nom', 'sku', 'Devices'],
             $stores->map(fn(Store $store, int $index) => [
                 $index + 1,
                 $store->name,
@@ -127,7 +127,7 @@ class GenerateDeviceToken extends Command
             ])
         );
 
-        $choice = $this->ask('Sélectionnez le store avec son nombre/slug');
+        $choice = $this->ask('Sélectionnez le store avec son nombre/sku');
         if (is_numeric($choice)){
             $choiceIndex = ((int) $choice) - 1;
             if(! isset($stores[$choiceIndex])){
@@ -140,11 +140,11 @@ class GenerateDeviceToken extends Command
             $choice = (string) $choice;
             $queriedStore = Store::query()
                 ->where('is_active', true)
-                ->where('slug', $choice)
+                ->where('sku', $choice)
                 ->first();
 
             if(! $queriedStore){
-                $this->error("Le store avec le slug $choice n'a pas été trouvé");
+                $this->error("Le store avec le sku $choice n'a pas été trouvé");
                 return null;
             }
 
