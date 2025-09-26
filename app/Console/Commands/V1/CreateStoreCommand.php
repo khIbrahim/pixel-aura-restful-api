@@ -5,10 +5,11 @@ namespace App\Console\Commands\V1;
 use App\Constants\V1\Defaults;
 use App\Models\V1\Store;
 use App\Models\V1\User;
+use App\Services\V1\Item\SkuGeneratorService;
 use App\Services\V1\StoreService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class CreateStoreCommand extends Command
@@ -67,21 +68,21 @@ class CreateStoreCommand extends Command
             return null;
         }
 
-        $defaultSlug = Str::slug($name);
-        $slug = $this->ask("Slug du store (URL-friendly)", $defaultSlug);
+        $defaultSku = app(SkuGeneratorService::class)->generateSku($name, -1);
+        $sku = $this->ask("Sku du store (URL-friendly)", $defaultSku);
 
-        if (Store::where('slug', $slug)->exists()) {
-            $this->error("Le slug '$slug' existe déjà. Choisissez un autre slug.");
-            $slug = $this->ask("Nouveau slug");
-            if (Store::where('slug', $slug)->exists()) {
-                $this->error("Le slug '$slug' existe toujours. Arrêt de la création.");
+        if (Store::query()->where('sku', $sku)->exists()) {
+            $this->error("Le sku '$sku' existe déjà. Choisissez un autre sku.");
+            $sku = $this->ask("Nouveau sku");
+            if (Store::query()->where('sku', $sku)->exists()) {
+                $this->error("Le sku '$sku' existe toujours. Arrêt de la création.");
                 return null;
             }
         }
 
         return [
             'name' => $name,
-            'slug' => $slug,
+            'sku'  => $sku,
         ];
     }
 
@@ -194,7 +195,7 @@ class CreateStoreCommand extends Command
     {
         $rules = [
             'name'             => 'required|string|max:255',
-            'slug'             => 'required|string|max:255|unique:stores,slug',
+            'sku'              => ['required', 'string', 'max:255', Rule::unique('stores', 'sku')],
             'email'            => 'nullable|email|max:255',
             'phone'            => 'nullable|string|max:20',
             'address'          => 'nullable|string|max:500',
@@ -207,7 +208,7 @@ class CreateStoreCommand extends Command
             'tax_inclusive'    => 'nullable|boolean',
             'default_vat_rate' => 'nullable|numeric|min:0|max:100',
             'owner.name'       => 'sometimes|required|string|max:255',
-            'owner.email'      => 'sometimes|required|email|unique:users,email',
+            'owner.email'      => ['sometimes', 'required', 'email', 'max:255', Rule::unique('users', 'email')],
             'owner.password'   => 'sometimes|required|string|min:6',
             'owner.first_name' => 'nullable|string|max:100',
             'owner.last_name'  => 'nullable|string|max:100',
@@ -233,7 +234,7 @@ class CreateStoreCommand extends Command
 
         $summary = [
             ['Store', $data['name']],
-            ['Slug', $data['slug']],
+            ['Sku', $data['sku']],
             ['Email', $data['email'] ?? 'Non spécifié'],
             ['Téléphone', $data['phone'] ?? 'Non spécifié'],
             ['Adresse', $this->formatAddress($data)],
@@ -281,7 +282,7 @@ class CreateStoreCommand extends Command
             [
                 ['ID', $store->id],
                 ['Nom', $store->name],
-                ['Slug', $store->sku],
+                ['sku', $store->sku],
                 ['Propriétaire', $store->owner->name],
                 ['Email propriétaire', $store->owner->email],
                 ['Devise', $store->currency],
