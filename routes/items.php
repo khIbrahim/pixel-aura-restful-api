@@ -25,39 +25,7 @@ Route::prefix('v1')
             ->name('items.index')
             ->middleware(['ability:' . StoreTokenAbilities::ITEM_READ]);
 
-        Route::get('/items/{item}/ingredients', [ItemsController::class, 'listIngredients'])
-            ->name('items.ingredients.index')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_READ]);
-
-        Route::post('items/{item}/options', [ItemsController::class, 'attachOptions'])
-            ->name('items.options.attach')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
-
-        Route::delete('items/{item}/options/{option}', [ItemsController::class, 'detachOption'])
-            ->name('items.options.detach')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
-
-        Route::post('items/{item}/ingredients', [ItemsController::class, 'attachIngredients'])
-            ->name('items.ingredients.attach')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
-
-        Route::get('/items/{item}/options', [ItemsController::class, 'listOptions'])
-            ->name('items.options.index')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_READ]);
-
-        Route::get('/items/{item}/variants', [ItemsController::class, 'listVariants'])
-            ->name('items.variants.index')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_READ]);
-
         Route::match(['put', 'patch'], '/items/{item}', [ItemsController::class, 'update'])
             ->name('items.update')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
-
-        Route::delete('items/{item}/ingredients/{ingredient}', [ItemsController::class, 'detachIngredient'])
-            ->name('items.ingredients.detach')
-            ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
-
-        Route::delete('items/{item}/ingredients', [ItemsController::class, 'detachIngredients'])
-            ->name('items.ingredients.detach.multiple')
             ->middleware(['ability:' . StoreTokenAbilities::ITEM_UPDATE]);
     });

@@ -4,20 +4,23 @@ namespace App\Http\Resources\V1;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AbstractPivotResource extends JsonResource
+abstract class AbstractPivotResource extends JsonResource
 {
-
-    public function __construct($resource, protected bool $isPivot = false)
+    /**
+     * @param string $attribute
+     * @return mixed
+     */
+    protected function getPivotValue(string $attribute): mixed
     {
-        parent::__construct($resource);
+        if (isset($this->pivot) && array_key_exists($attribute, $this->pivot->getAttributes())) {
+            return $this->pivot->$attribute;
+        }
+
+        return $this->$attribute;
     }
 
-    public static function collection($resource, bool $isPivot = false)
+    protected function hasPivot(): bool
     {
-        return parent::collection($resource)->map(function ($item) use ($isPivot) {
-            $item->isPivot = $isPivot;
-            return $item;
-        });
+        return isset($this->pivot) && $this->pivot->exists;
     }
-
 }

@@ -2,36 +2,23 @@
 
 namespace App\Contracts\V1\Item;
 
+use App\DTO\V1\Ingredient\IngredientPivotDTO;
 use App\DTO\V1\Option\OptionPivotDTO;
-use App\Models\V1\Ingredient;
+use App\DTO\V1\OptionList\OptionListPivotDTO;
 use App\Models\V1\Item;
-use App\Models\V1\Option;
-use Illuminate\Support\Collection;
 
 interface ItemAttachmentServiceInterface
 {
-    /**
-     * @param Item $item
-     * @param OptionPivotDTO[] $options
-     * @return Collection<Option>
-     */
-    public function attachOptions(Item $item, array $options): Collection;
+    public function attachIngredient(Item $item, array|IngredientPivotDTO $data): void;
 
-    /**
-     * @param Item $item
-     * @param array $ingredients
-     * @return Collection<Item>
-     */
-    public function attachIngredients(Item $item, array $ingredients): Collection;
+    public function detachIngredient(Item $item, int $ingredientId): void;
 
-    public function detachOption(Item $item, Option $option): bool;
+    public function attachOption(Item $item, array|OptionPivotDTO $data): void;
 
-    public function detachIngredient(Item $item, Ingredient $ingredient): bool;
+    public function detachOption(Item $item, int $optionId): void;
 
-    /**
-     * @param Item $item
-     * @param array $ingredientIds
-     * @return bool
-     */
-    public function detachIngredients(Item $item, array $ingredientIds): bool;
+    public function attachOptionList(Item $item, array|OptionListPivotDTO $data): void;
+
+    public function detachOptionList(Item $item, int $optionListId): void;
+
 }

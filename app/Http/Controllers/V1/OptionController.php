@@ -3,12 +3,11 @@
 namespace App\Http\Controllers\V1;
 
 use App\Contracts\V1\Option\OptionServiceInterface;
-use App\DTO\V1\Option\CreateOptionDTO;
-use App\DTO\V1\Option\UpdateOptionDTO;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\V1\Option\StoreOptionRequest;
+use App\Http\Requests\V1\Option\CreateOptionRequest;
 use App\Http\Requests\V1\Option\UpdateOptionRequest;
 use App\Http\Resources\V1\OptionResource;
+use App\Hydrators\V1\Option\OptionHydrator;
 use App\Models\V1\Option;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,7 +17,8 @@ class OptionController extends Controller
 {
 
     public function __construct(
-        private readonly OptionServiceInterface $optionService
+        private readonly OptionServiceInterface $optionService,
+        private readonly OptionHydrator         $optionHydrator
     ){}
 
     public function index(Request $request): JsonResponse
@@ -41,13 +41,10 @@ class OptionController extends Controller
         ]);
     }
 
-    public function store(StoreOptionRequest $request): JsonResponse
+    public function store(CreateOptionRequest $request): JsonResponse
     {
         try {
-            $option = $this->optionService->create(CreateOptionDTO::fromArray(array_merge(
-                ['store_id' => (int) $request->attributes->get('store')->id],
-                $request->validated()
-            )));
+            $option = $this->optionService->create($this->optionHydrator->fromCreateRequest($request));
 
             return response()->json([
                 'message' => "Option créé avec succès.",
@@ -71,7 +68,7 @@ class OptionController extends Controller
     public function update(UpdateOptionRequest $request, Option $option): JsonResponse
     {
         try {
-            $option = $this->optionService->update($option, UpdateOptionDTO::fromArray($request->validated()));
+            $option = $this->optionService->update($option, $this->optionHydrator->fromUpdateRequest($request));
 
             return response()->json([
                 'message' => "Option mise à jour avec succès.",

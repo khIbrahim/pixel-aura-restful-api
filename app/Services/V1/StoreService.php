@@ -3,6 +3,9 @@
 namespace App\Services\V1;
 
 use App\Constants\V1\Defaults;
+use App\Contracts\V1\Store\StoreRepositoryInterface;
+use App\Contracts\V1\Store\StoreServiceInterface;
+use App\DTO\V1\Store\CreateStoreDTO;
 use App\Enum\StoreMemberRole;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
@@ -11,8 +14,19 @@ use App\Services\V1\StoreMember\StoreMemberCodeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class StoreService
+readonly class StoreService implements StoreServiceInterface
 {
+
+    public function __construct(
+        private StoreRepositoryInterface $storeRepository
+    ){}
+
+    public function create(CreateStoreDTO $data): Store
+    {
+        /** @var Store $store */
+        $store = $this->storeRepository->create(collect($data->toArray())->except('owner')->toArray());
+        return $store;
+    }
 
     /**
      * @param array $data

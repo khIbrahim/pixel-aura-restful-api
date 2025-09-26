@@ -20,6 +20,8 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/media.php',
             __DIR__.'/../routes/ingredients.php',
             __DIR__.'/../routes/options.php',
+            __DIR__.'/../routes/option_lists.php',
+            __DIR__.'/../routes/item_attachments.php',
         ],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',

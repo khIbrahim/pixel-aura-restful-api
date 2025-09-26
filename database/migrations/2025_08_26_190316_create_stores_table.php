@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
 
             $table->string('name', 120)->nullable(false);
-            $table->string('slug', 140)->nullable(false);
+            $table->string('sku', 140)->nullable(false);
 
             $table->foreignId('owner_id')
                 ->nullable()

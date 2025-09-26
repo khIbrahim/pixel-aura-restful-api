@@ -3,11 +3,14 @@
 namespace App\Services\V1\Item;
 
 use App\Contracts\V1\Ingredient\IngredientRepositoryInterface;
+use App\Contracts\V1\Item\ItemAttachmentServiceInterface;
 use App\Contracts\V1\Item\ItemRepositoryInterface;
 use App\Contracts\V1\Item\ItemServiceInterface;
 use App\Contracts\V1\Option\OptionRepositoryInterface;
+use App\DTO\V1\Ingredient\IngredientPivotDTO;
 use App\DTO\V1\Item\CreateItemDTO;
 use App\DTO\V1\Media\MediaUploadOptions;
+use App\DTO\V1\Option\OptionPivotDTO;
 use App\Events\V1\Item\ItemCreated;
 use App\Exceptions\V1\Item\ItemCreationException;
 use App\Models\V1\Item;
@@ -16,6 +19,7 @@ use App\Support\Results\MediaResult;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -27,6 +31,7 @@ readonly class ItemService implements ItemServiceInterface
         private IngredientRepositoryInterface $ingredientRepository,
         private OptionRepositoryInterface $optionRepository,
         private MediaManager            $mediaManager,
+        private ItemAttachmentServiceInterface $itemAttachmentService,
     ){}
 
     /**
@@ -36,7 +41,8 @@ readonly class ItemService implements ItemServiceInterface
     {
         try {
             return DB::transaction(function() use ($data) {
-                $item = $this->itemRepository->createItem($data);
+                /** @var Item $item */
+                $item = $this->itemRepository->create($data->toArray());
 
                 if(! empty($data->variants)){
                     $this->itemRepository->bulkCreateVariants($item, $data->variants);
@@ -44,12 +50,12 @@ readonly class ItemService implements ItemServiceInterface
 
                 foreach ($data->ingredients as $ingredientDTO) {
                     $ingredient = $this->ingredientRepository->findOrCreateIngredient($ingredientDTO);
-                    $this->itemRepository->attachIngredient($item, $ingredient, $ingredientDTO);
+                    $this->itemAttachmentService->attachIngredient($item, IngredientPivotDTO::fromCreation($ingredientDTO, $ingredient));
                 }
 
                 foreach ($data->options as $optionDTO) {
                     $option = $this->optionRepository->findOrCreateOption($optionDTO);
-                    $this->itemRepository->attachOption($item, $option, $optionDTO);
+                    $this->itemAttachmentService->attachOption($item, OptionPivotDTO::fromCreation($optionDTO, $option));
                 }
 
                 if ($data->image !== null && $data->image !== ''){
@@ -63,6 +69,7 @@ readonly class ItemService implements ItemServiceInterface
                 ]);
 
                 broadcast(new ItemCreated($item))->toOthers();
+                $this->clearCache($data->store_id);
 
                 return $item->load(['variants','ingredients','options','category','tax']);
             });
@@ -89,14 +96,9 @@ readonly class ItemService implements ItemServiceInterface
         return $this->itemRepository->list($storeId, $filters, $perPage);
     }
 
-//    public function attachOptions(Item $item, OptionsAttachDTO $optionsData): array
-//    {
-//        DB::transaction(function () use ($item, $optionsData) {
-//            $options =
-//        })
-//    }
-    public function attachOptions(Item $item): array
+    private function clearCache(int $storeId): void
     {
-        return [];
+        Cache::tags(['items'])->flush();
+        Cache::forget('items.store.' . $storeId);
     }
 }

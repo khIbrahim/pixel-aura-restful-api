@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\V1;
 
-use App\Actions\StoreMember\V1\CreateStoreMember;
-use App\Actions\StoreMember\V1\UpdateStoreMember;
 use App\Contracts\V1\Export\StoreMemberExportServiceInterface;
+use App\Contracts\V1\StoreMember\StoreMemberServiceInterface;
 use App\DTO\V1\StoreMember\CreateStoreMemberDTO;
 use App\DTO\V1\StoreMember\ExportStoreMembersDTO;
 use App\DTO\V1\StoreMember\ImportStoreMemberDTO;
@@ -17,55 +16,76 @@ use App\Http\Requests\V1\StoreMember\UpdateStoreMemberRequest;
 use App\Http\Resources\V1\StoreMemberResource;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
-use App\Services\V1\Auth\AbilityManager;
 use App\Services\V1\StoreMember\StoreMemberImportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Throwable;
 
 class StoreMembersController extends Controller
 {
 
+    public function __construct(
+        private readonly StoreMemberServiceInterface $storeMemberService
+    ){}
+
     /**
      * GET /stores/{store}/members
-     * Route: store.members.index
      */
-    public function index(Store $store): AnonymousResourceCollection
+    public function index(Request $request, Store $store): JsonResponse
     {
-        $members = $store->storeMembers()
-            ->with('user')
-            ->orderBy('role')
-            ->paginate(20);
+        $filters = $request->only(['is_active', 'search', 'role', 'locked']);
+        $perPage = (int) $request->get('per_page', 25);
 
-        return StoreMemberResource::collection($members);
+        $storeMembers = $this->storeMemberService->list($store->id, $filters, $perPage);
+
+        return response()->json([
+            'data' => StoreMemberResource::collection($storeMembers),
+            'meta' => [
+                'current_page' => $storeMembers->currentPage(),
+                'per_page'     => $storeMembers->perPage(),
+                'total'        => $storeMembers->total(),
+                'last_page'    => $storeMembers->lastPage(),
+            ]
+        ]);
     }
 
-    public function store(StoreStoreMemberRequest $request, Store $store, CreateStoreMember $action): JsonResponse
+    public function store(StoreStoreMemberRequest $request, Store $store): JsonResponse
     {
         try {
-            $storeMemberDTO = CreateStoreMemberDTO::fromRequest($store, $request->validated());
-            $storeMember    = $action($storeMemberDTO);
+            $data        = CreateStoreMemberDTO::fromRequest($store, $request->validated());
+            $storeMember = $this->storeMemberService->create($data);
+
+            Log::info("Store member créé", [
+                'store_member_id' => $storeMember->id,
+                'store_id'        => $store->id,
+                'name'            => $storeMember->name,
+                'role'            => $storeMember->role,
+            ]);
 
             return response()->json([
                 'message' => 'Store member créé avec succès',
-                'data' => new StoreMemberResource($storeMember),
+                'data'    => new StoreMemberResource($storeMember),
             ], 201);
         }
         catch (Throwable $e) {
-            report($e);
+            Log::error("Erreur lors de la création du store member", [
+                'store_id' => $store->id,
+                'error'    => $e->getMessage(),
+                'trace'    => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'message' => 'Erreur lors de la création du store member',
-                'code'    => 'STORE_MEMBER_CREATE_FAILED',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
 
     /**
      * GET /api/v1/members/{store_member}
-     * Route: members.show
      */
     public function show(StoreMember $storeMember): StoreMemberResource
     {
@@ -75,23 +95,35 @@ class StoreMembersController extends Controller
 
     /**
      * PUT/PATCH /api/v1/members/{store_member}
-     * Route: members.update
      */
-    public function update(UpdateStoreMemberRequest $request, StoreMember $storeMember, UpdateStoreMember $action): JsonResponse
+    public function update(UpdateStoreMemberRequest $request, StoreMember $storeMember): JsonResponse
     {
         try {
-            $updateStoreMemberDTO = UpdateStoreMemberDTO::fromRequest($request->validated());
-            $updatedMember        = $action($storeMember, $updateStoreMemberDTO);
+            $data          = UpdateStoreMemberDTO::fromRequest($request->validated());
+            $updatedMember = $this->storeMemberService->update($storeMember, $data);
+
+            Log::info("Store member mis à jour", [
+                'store_member_id' => $updatedMember->id,
+                'store_id'        => $updatedMember->store_id,
+                'name'            => $updatedMember->name,
+                'role'            => $updatedMember->role,
+            ]);
 
             return response()->json([
                 'message' => 'Store member mis à jour avec succès',
-                'data' => new StoreMemberResource($updatedMember),
-            ], 201);
+                'data'    => new StoreMemberResource($updatedMember),
+            ]);
         } catch (Throwable $e) {
-            report($e);
+            Log::error("Erreur lors de la mise à jour du store member", [
+                'store_member_id' => $storeMember->id,
+                'store_id'        => $storeMember->store_id,
+                'error'           => $e->getMessage(),
+                'trace'           => $e->getTraceAsString(),
+            ]);
+
             return response()->json([
                 'message' => 'Erreur lors de la mise à jour du store member',
-                'error'   => 'UPDATE_STORE_MEMBER',
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
@@ -101,28 +133,52 @@ class StoreMembersController extends Controller
      */
     public function destroy(StoreMember $storeMember): Response|JsonResponse
     {
-        if ($storeMember->isActive()) {
+        $deleted = $this->storeMemberService->delete($storeMember);
+
+        if ($deleted) {
+            Log::info("Store member supprimé", [
+                'store_member_id' => $storeMember->id,
+                'store_id'        => $storeMember->store_id,
+                'name'            => $storeMember->name,
+            ]);
+
+            return response()->noContent();
+        } else {
+            Log::error("Erreur lors de la suppression du store member", [
+                'store_member_id' => $storeMember->id,
+                'store_id'        => $storeMember->store_id,
+            ]);
+
             return response()->json([
-                'error'   => 'ACTIVE_SHIFT',
-                'message' => 'Impossible de supprimer un membre avec un shift en cours',
-            ], 409);
+                'message' => 'Erreur lors de la suppression du store member',
+            ], 500);
         }
-
-        $storeMember->delete();
-
-        return response()->noContent();
     }
 
     /**
      * DELETE api/v1/store-members/{id}/force-destroy
-     * Route: members.force-destroy
      */
-    public function forceDestroy(string $id): Response
+    public function forceDestroy(string $id): JsonResponse
     {
-        $member = StoreMember::withTrashed()->findOrFail($id);
-        $member->forceDelete();
+        $deleted = $this->storeMemberService->forceDelete($id);
 
-        return response()->noContent();
+        if ($deleted) {
+            Log::info("Store member définitivement supprimé", [
+                'store_member_id' => $id,
+            ]);
+
+            return response()->json([
+                'message' => 'Store member définitivement supprimé avec succès',
+            ]);
+        } else {
+            Log::error("Erreur lors de la suppression définitive du store member", [
+                'store_member_id' => $id,
+            ]);
+
+            return response()->json([
+                'message' => 'Erreur lors de la suppression définitive du store member',
+            ], 500);
+        }
     }
 
     /**
@@ -130,40 +186,29 @@ class StoreMembersController extends Controller
      */
     public function restore(string $id): JsonResponse
     {
-        $member = StoreMember::withTrashed()->findOrFail($id);
+        $restored = $this->storeMemberService->restore($id);
 
-        if ($member->trashed()) {
-            $member->restore();
-            $member->refresh();
-        }
-
-        return new StoreMemberResource($member)
-            ->response()
-            ->setStatusCode(200);
-    }
-
-    /**
-     * GET /api/v1/store-members/{store_member}/abilities
-     * Route: store-members.abilities
-     */
-    public function listAbilities(StoreMember $storeMember, AbilityManager $abilityManager): JsonResponse
-    {
-        try {
-            return response()->json([
-                'data' => $abilityManager->getPermissionReport($storeMember),
+        if ($restored) {
+            Log::info("Store member restauré", [
+                'store_member_id' => $id,
             ]);
-        } catch (Throwable $e) {
-            report($e);
+
             return response()->json([
-                'message' => 'Erreur lors de la récupération des permissions',
-                'code'    => 'LIST_STORE_MEMBER_ABILITIES_FAILED',
+                'message' => 'Store member restauré avec succès',
+            ]);
+        } else {
+            Log::error("Erreur lors de la restauration du store member", [
+                'store_member_id' => $id,
+            ]);
+
+            return response()->json([
+                'message' => 'Erreur lors de la restauration du store member',
             ], 500);
         }
     }
 
     /**
      * POST /api/v1/stores/{store}/members/impor
-     * Route: store-members.import
      */
     public function import(Store $store, ImportStoreMemberRequest $request, StoreMemberImportService $service): JsonResponse
     {
@@ -317,48 +362,4 @@ class StoreMembersController extends Controller
 //        }
     }
 
-    /**
-     * GET /api/v1/stores/{store}/members/search
-     * Recherche avancée de membres dans un magasin
-     */
-    public function search(Store $store, Request $request): AnonymousResourceCollection
-    {
-        $query = $store->storeMembers()->with('user');
-
-        if ($request->has('role')) {
-            $query->where('role', $request->input('role'));
-        }
-
-        if ($request->has('q')) {
-            $searchTerm = $request->input('q');
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('first_name', 'like', "%{$searchTerm}%")
-                  ->orWhere('last_name', 'like', "%{$searchTerm}%")
-                  ->orWhere('email', 'like', "%{$searchTerm}%")
-                  ->orWhere('code', 'like', "%{$searchTerm}%");
-            });
-        }
-
-        if ($request->has('active')) {
-            $isActive = filter_var($request->input('active'), FILTER_VALIDATE_BOOLEAN);
-            if ($isActive) {
-                $query->whereNull('deleted_at');
-            } else {
-                $query->onlyTrashed();
-            }
-        }
-
-        $sortField = $request->input('sort_by', 'created_at');
-        $sortDir = $request->input('sort_dir', 'desc');
-        $allowedSortFields = ['first_name', 'last_name', 'email', 'role', 'created_at', 'updated_at'];
-
-        if (in_array($sortField, $allowedSortFields)) {
-            $query->orderBy($sortField, $sortDir === 'asc' ? 'asc' : 'desc');
-        }
-
-        $perPage = min(max((int)$request->input('per_page', 15), 5), 50);
-        $members = $query->paginate($perPage);
-
-        return StoreMemberResource::collection($members);
-    }
 }

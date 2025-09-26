@@ -32,7 +32,7 @@ class GenerateDeviceToken extends Command
             return CommandAlias::FAILURE;
         }
 
-        $this->info("Store sélectionné: " . $store->name . " (" . $store->slug  . ")");
+        $this->info("Store sélectionné: " . $store->name . " (" . $store->sku  . ")");
 
         $deviceType = $this->selectDeviceType();
         if(! $deviceType){
@@ -84,7 +84,7 @@ class GenerateDeviceToken extends Command
         $this->line("• Le token expirera le: {$result['expires_at']}");
 
         $this->info("\nAjoutez dans votre fichier .env:");
-        $this->line("STORE_SLUG=$store->slug");
+        $this->line("STORE_SLUG=$store->sku");
         $this->line("DEVICE_TOKEN={$result['token']}");
         $this->line("DEVICE_FINGERPRINT={$result['fingerprint']}");
 
@@ -113,7 +113,7 @@ class GenerateDeviceToken extends Command
         if ($stores->count() === 1){
             /** @var Store $store */
             $store = $stores->first();
-            $this->info("Store sélectionné: $store->name ($store->slug)");
+            $this->info("Store sélectionné: $store->name ($store->sku)");
             return $store;
         }
 
@@ -122,7 +122,7 @@ class GenerateDeviceToken extends Command
             $stores->map(fn(Store $store, int $index) => [
                 $index + 1,
                 $store->name,
-                $store->slug,
+                $store->sku,
                 $store->devices()->count()
             ])
         );
@@ -193,7 +193,7 @@ class GenerateDeviceToken extends Command
     private function generateQRCode(array $result, Store $store): void
     {
         $setupData = [
-            'store_slug'          => $store->slug,
+            'store_slug'          => $store->sku,
             'device_token'        => $result['token'],
             'device_token_name'   => $result['token_name'],
             'device_fingerprint'  => $result['fingerprint'],

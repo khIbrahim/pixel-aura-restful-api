@@ -2,13 +2,14 @@
 
 namespace App\Repositories\V1;
 
+use App\Contracts\V1\Base\BaseRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
-abstract class BaseRepository
+abstract class BaseRepository implements BaseRepositoryInterface
 {
     protected Model $model;
 
@@ -69,7 +70,7 @@ abstract class BaseRepository
     public function update(Model $model, array $attributes): Model
     {
         return DB::transaction(function () use ($model, $attributes) {
-            $model->update($attributes);
+            $model->update(array_filter($attributes, fn($v) => $v !== null));
             return $model->fresh();
         });
     }
@@ -169,7 +170,7 @@ abstract class BaseRepository
         });
     }
 
-    public function bulkUpsert(array $values, array $uniqueBy, array $update = null): int
+    public function bulkUpsert(array $values, array $uniqueBy, ?array $update = null): int
     {
         return DB::transaction(function () use ($values, $uniqueBy, $update) {
             return $this->query()->upsert($values, $uniqueBy, $update);
@@ -214,17 +215,27 @@ abstract class BaseRepository
         return $this->query()->onlyTrashed();
     }
 
-    public function restore(Model $model): bool
+    public function restore(int $id): bool
     {
-        return DB::transaction(function () use ($model) {
-            return $model->restore();
+        return DB::transaction(function () use ($id) {
+            $model = $this->query()->withTrashed()->find($id);
+            if ($model && method_exists($model, 'restore')) {
+                return $model->restore();
+            } else {
+                return false;
+            }
         });
     }
 
-    public function forceDelete(Model $model): bool
+    public function forceDelete(int $id): bool
     {
-        return DB::transaction(function () use ($model) {
-            return $model->forceDelete();
+        return DB::transaction(function () use ($id) {
+            $model = $this->query()->withTrashed()->find($id);
+            if ($model) {
+                return $model->forceDelete();
+            } else {
+                return false;
+            }
         });
     }
 

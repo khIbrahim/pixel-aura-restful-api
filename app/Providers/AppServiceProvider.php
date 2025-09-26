@@ -7,6 +7,12 @@ use App\Models\V1\Auth\PersonalAccessToken;
 use App\Models\V1\Device;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
+use App\Providers\V1\CategoryServiceProvider;
+use App\Providers\V1\ItemServiceProvider;
+use App\Providers\V1\RateLimitServiceProvider;
+use App\Providers\V1\StoreMemberAuthServiceProvider;
+use App\Providers\V1\StoreMemberServiceProvider;
+use App\Providers\V1\StoreServiceProvider;
 use App\Services\V1\Media\ImageProcessor;
 use App\Services\V1\Media\MediaManager;
 use App\Services\V1\Media\MediaUrlGenerator;
@@ -23,6 +29,13 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->register(StoreServiceProvider::class);
+        $this->app->register(CategoryServiceProvider::class);
+        $this->app->register(ItemServiceProvider::class);
+        $this->app->register(StoreMemberServiceProvider::class);
+        $this->app->register(StoreMemberAuthServiceProvider::class);
+        $this->app->register(RateLimitServiceProvider::class);
+
         $this->app->bind(
             MediaManagerInterface::class,
             MediaManager::class
@@ -32,17 +45,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(UrlImageDownloader::class);
         $this->app->singleton(ImageProcessor::class);
         $this->app->singleton(MediaUrlGenerator::class);
-
-
-
-//        if (config('media-management.url_processing.enabled')) {
-//            $this->app->booted(function () {
-//                $schedule = $this->app->make(Schedule::class);
-//                $schedule->command('media:cleanup-temp --older-than=1h')
-//                    ->hourly()
-//                    ->withoutOverlapping();
-//            });
-//        }
     }
 
     public function boot(): void

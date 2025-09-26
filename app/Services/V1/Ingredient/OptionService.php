@@ -28,7 +28,9 @@ readonly class OptionService implements OptionServiceInterface
 
     public function update(Option $option, UpdateOptionDTO $data): Option
     {
-        return $this->optionRepository->updateOption($option, $data);
+        /** @var Option $option */
+        $option = $this->optionRepository->update($option, $data->toArray());
+        return $option;
     }
 
     public function delete(Option $option): bool

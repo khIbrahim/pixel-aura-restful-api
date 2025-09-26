@@ -16,31 +16,40 @@ use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
- * @property int         $id
- * @property int         $store_id
- * @property int|null    $category_id
- * @property int|null    $tax_id
- * @property string      $name
- * @property string      $sku
- * @property string|null $barcode
- * @property string|null $description
- * @property string      $currency
- * @property int         $base_price_cents
- * @property int         $current_cost_cents
- * @property bool        $is_active
- * @property bool        $track_inventory
- * @property int         $stock
- * @property bool        $loyalty_eligible
- * @property int|null    $age_restriction
- * @property int|null    $reorder_level
- * @property int|null    $weight_grams
- * @property array|null  $tags
- * @property array|null  $metadata
- * @property int|null    $created_by
- * @property int|null    $updated_by
- * @property Carbon      $created_at
- * @property Carbon      $updated_at
- * @property Carbon|null $deleted_at
+ * @property int                $id
+ * @property int                $store_id
+ * @property int|null           $category_id
+ * @property int|null           $tax_id
+ * @property string             $name
+ * @property string             $sku
+ * @property string|null        $barcode
+ * @property string|null        $description
+ * @property string             $currency
+ * @property int                $base_price_cents
+ * @property int                $current_cost_cents
+ * @property bool               $is_active
+ * @property bool               $track_inventory
+ * @property int                $stock
+ * @property bool               $loyalty_eligible
+ * @property int|null           $age_restriction
+ * @property int|null           $reorder_level
+ * @property int|null           $weight_grams
+ * @property array|null         $tags
+ * @property array|null         $metadata
+ * @property int|null           $created_by
+ * @property int|null           $updated_by
+ * @property Carbon             $created_at
+ * @property Carbon             $updated_at
+ * @property Carbon|null        $deleted_at
+ * @property Store              $store
+ * @property Category|null      $category
+ * @property Tax|null           $tax
+ * @property StoreMember|null   $creator
+ * @property StoreMember|null   $updater
+ * @property ItemVariant[]|null $variants
+ * @property Ingredient[]|null  $ingredients
+ * @property Option[]|null      $options
+ * @property OptionList[]|null  $optionLists
  */
 class Item extends Model implements HasMedia, DefinesMediaPath
 {
@@ -132,7 +141,7 @@ class Item extends Model implements HasMedia, DefinesMediaPath
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class, 'item_options')
-            ->withPivot(['store_id', 'name', 'price_cents', 'is_active'])
+            ->withPivot(['store_id', 'name', 'price_cents', 'is_active', 'description'])
             ->withTimestamps();
     }
 

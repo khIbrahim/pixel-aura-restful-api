@@ -4,11 +4,10 @@ namespace App\Services\V1\OptionList;
 
 use App\Contracts\V1\OptionList\OptionListRepositoryInterface;
 use App\Contracts\V1\OptionList\OptionListServiceInterface;
-use App\DTO\V1\OptionList\StoreOptionListDTO;
+use App\DTO\V1\OptionList\CreateOptionListDTO;
 use App\DTO\V1\OptionList\UpdateOptionListDTO;
 use App\Models\V1\OptionList;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
 readonly class OptionListService implements OptionListServiceInterface
@@ -17,16 +16,18 @@ readonly class OptionListService implements OptionListServiceInterface
         private OptionListRepositoryInterface $repository,
     ) {}
 
-    public function create(StoreOptionListDTO $data): OptionList
+    public function create(CreateOptionListDTO $data): OptionList
     {
+        /** @var OptionList $optionList */
         $optionList = $this->repository->create($data->toArray());
-        $this->clearCache($data->storeId);
+        $this->clearCache($data->store_id);
         return $optionList->load('options');
     }
 
     public function update(OptionList $optionList, UpdateOptionListDTO $data): OptionList
     {
         $updatedOptionList = $this->repository->update($optionList, $data->toArray());
+        assert($updatedOptionList instanceof OptionList);
         $this->clearCache($optionList->store_id);
         $updatedOptionList->load('options');
         return $updatedOptionList;
@@ -45,45 +46,9 @@ readonly class OptionListService implements OptionListServiceInterface
         return $this->repository->filterForPos($storeId, $filters, $perPage);
     }
 
-    public function findByStore(int $storeId, bool $withRelations = true): Collection
-    {
-        return $withRelations ? $this->repository->findByStoreWithRelations($storeId) : $this->repository->findManyBy('store_id', $storeId);
-    }
-
-    public function search(int $storeId, string $term, array $filters = []): Collection
-    {
-        return $this->repository->searchOptionLists($storeId, $term, $filters)->get();
-    }
-
-    public function bulkUpdateStatus(array $optionListIds, bool $isActive): int
-    {
-        $result = $this->repository->bulkUpdateStatus($optionListIds, $isActive);
-
-        $optionLists = $this->repository->findMany($optionListIds, ['store_id']);
-        $storeIds = $optionLists->pluck('store_id')->unique();
-
-        foreach ($storeIds as $storeId) {
-            $this->clearCache($storeId);
-        }
-
-        return $result;
-    }
-
-    public function attachToItem(OptionList $optionList, int $itemId, array $pivotData = []): void
-    {
-        $this->repository->attachRelation($optionList->id, 'items', $itemId, $pivotData);
-        $this->clearCache($optionList->store_id);
-    }
-
-    public function detachFromItem(OptionList $optionList, int $itemId): void
-    {
-        $this->repository->detachRelation($optionList->id, 'items', $itemId);
-        $this->clearCache($optionList->store_id);
-    }
-
     private function clearCache(int $storeId): void
     {
         Cache::tags(['option_lists'])->flush();
-        Cache::forget("option_lists.store.{$storeId}");
+        Cache::forget("option_lists.store.$storeId");
     }
 }

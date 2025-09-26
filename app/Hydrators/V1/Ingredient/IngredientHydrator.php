@@ -4,27 +4,30 @@ namespace App\Hydrators\V1\Ingredient;
 
 use App\Contracts\V1\Ingredient\IngredientRepositoryInterface;
 use App\DTO\V1\Ingredient\IngredientPivotDTO;
-use App\Http\Requests\V1\Ingredient\AttachIngredientsRequest;
+use App\Http\Requests\V1\ItemAttachment\AttachIngredientsRequest;
+use App\Hydrators\V1\BaseHydrator;
 use App\Models\V1\Ingredient;
-use Illuminate\Support\Facades\Cache;
 
-readonly class IngredientsAttachHydrator
+class IngredientHydrator extends BaseHydrator
 {
 
     public function __construct(
-        private IngredientRepositoryInterface $ingredientRepository
+        private readonly IngredientRepositoryInterface $ingredientRepository,
     ){}
 
-    public function fromRequest(AttachIngredientsRequest $request): array
+    public function fromAttachRequest(AttachIngredientsRequest $request, bool $asArray = true): array
     {
         $data           = $request->validated();
-        $ingredientsIds = array_column($data['ingredients'], 'id');
+        $ingredientsIds = array_column($data['ingredients'] ?? [], 'id');
+        if(empty($ingredientsIds)) {
+            return [];
+        }
 
         $existingIngredients = $this->ingredientRepository->findIngredientsByIds($ingredientsIds);
 
         $ingredients = [];
-        foreach ($data['ingredients'] as $ingredientData){
-            $id         = (int) $ingredientData['id'];
+        foreach ($data['ingredients'] as $ingredientData) {
+            $id = (int)$ingredientData['id'];
             /** @var Ingredient $ingredient */
             $ingredient = $existingIngredients->get($id);
 
@@ -41,7 +44,6 @@ readonly class IngredientsAttachHydrator
             );
         }
 
-        return $ingredients;
+        return $asArray ? array_map(fn($i) => $i->toArray(), $ingredients) : $ingredients;
     }
-
 }

@@ -2,13 +2,9 @@
 
 namespace App\Contracts\V1\OptionList;
 
-use App\Models\V1\OptionList;
+use App\Contracts\V1\Base\BaseRepositoryInterface;
 
-/**
- * @see \App\Repositories\V1\OptionList\OptionListRepository
- * @method OptionList create(array $data)
- */
-interface OptionListRepositoryInterface
+interface OptionListRepositoryInterface extends BaseRepositoryInterface
 {
 
 }

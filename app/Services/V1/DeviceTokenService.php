@@ -126,7 +126,7 @@ class DeviceTokenService
         return sprintf(
             '%s:%s:%s:%s',
             self::TOKEN_PREFIX,
-            $device->store->slug,
+            $device->store->sku,
             $device->type->value,
             $device->id
         );

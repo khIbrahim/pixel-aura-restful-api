@@ -4,12 +4,12 @@ namespace App\Repositories\V1\Option;
 
 use App\Contracts\V1\Option\OptionRepositoryInterface;
 use App\DTO\V1\Option\CreateOptionDTO;
-use App\DTO\V1\Option\UpdateOptionDTO;
 use App\Models\V1\Option;
+use App\Repositories\V1\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
-class OptionRepository implements OptionRepositoryInterface
+class OptionRepository extends BaseRepository implements OptionRepositoryInterface
 {
 
     public function findOrCreateOption(CreateOptionDTO $data): Option
@@ -62,22 +62,16 @@ class OptionRepository implements OptionRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    public function updateOption(Option $option, UpdateOptionDTO $data): Option
-    {
-        $option->update(array_filter($data->toArray(), fn($v) => $v !== null));
-        return $option->fresh();
-    }
-
-    public function delete(Option $option): bool
-    {
-        return $option->delete();
-    }
-
     public function findOptionsByIds(array $ids): Collection
     {
         return Option::query()
             ->whereIn('id', $ids)
             ->get()
             ->keyBy('id');
+    }
+
+    public function model(): string
+    {
+        return Option::class;
     }
 }

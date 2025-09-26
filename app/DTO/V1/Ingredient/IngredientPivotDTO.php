@@ -3,20 +3,21 @@
 namespace App\DTO\V1\Ingredient;
 
 use App\DTO\V1\Abstract\AbstractPivotDTO;
+use App\Models\V1\Ingredient;
 
-class IngredientPivotDTO extends AbstractPivotDTO
+readonly class IngredientPivotDTO extends AbstractPivotDTO
 {
 
     public function __construct(
-        public int $ingredientId,
-        public int $storeId,
+        public int     $ingredientId,
+        public int     $storeId,
         public ?string $name,
         public ?string $description,
-        public ?int $costPerUnitCents,
+        public ?int    $costPerUnitCents,
         public ?string $unit,
-        public ?bool $isActive,
-        public ?bool $isMandatory,
-        public ?bool $isAllergen,
+        public ?bool   $isActive,
+        public ?bool   $isMandatory,
+        public ?bool   $isAllergen,
     ){}
 
     public function getPivotKey(): int|string
@@ -37,4 +38,20 @@ class IngredientPivotDTO extends AbstractPivotDTO
             'is_allergen'          => $this->isAllergen,
         ];
     }
+
+    public static function fromCreation(CreateIngredientDTO $data, ?Ingredient $ingredient = null): self
+    {
+        return  new IngredientPivotDTO(
+            ingredientId: $ingredient->id,
+            storeId: $ingredient->store_id,
+            name: $data->name ?? $ingredient->name,
+            description: $data->description ?? $ingredient->description ?? null,
+            costPerUnitCents: $data->costPerUnitCents ?? $ingredient->cost_per_unit_cents ?? null,
+            unit: $data->unit ?? $ingredient->unit ?? null,
+            isActive: $data->isActive ?? $ingredient->is_active ?? true,
+            isMandatory: $data->isMandatory ?? $ingredient->is_mandatory ?? false,
+            isAllergen: $data->isAllergen ?? $ingredient->is_allergen ?? false,
+        );
+    }
+
 }

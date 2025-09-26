@@ -10,21 +10,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 
 /**
- * @property int         $id
- * @property int         $store_id
- * @property string      $name
- * @property string|null $description
- * @property string      $sku
- * @property int         $min_selections
- * @property int         $max_selections
- * @property bool        $is_active
- * @property Carbon      $created_at
- * @property Carbon      $updated_at
- * @property Carbon|null $deleted_at
+ * @property int           $id
+ * @property int           $store_id
+ * @property string        $name
+ * @property string|null   $description
+ * @property string        $sku
+ * @property int           $min_selections
+ * @property int           $max_selections
+ * @property bool          $is_active
+ * @property Carbon        $created_at
+ * @property Carbon        $updated_at
+ * @property Carbon|null   $deleted_at
+ * @property Option[]|null $options
  */
 class OptionList extends Model
 {
-    use SoftDeletes;
+//    use SoftDeletes;
 
     protected $table = "option_lists";
 
@@ -38,6 +39,11 @@ class OptionList extends Model
         'is_active',
     ];
 
+    protected $casts = [
+        'is_active'      => 'boolean',
+        'min_selections' => 'integer',
+        'max_selections' => 'integer',
+    ];
 
     public function store(): BelongsTo
     {
@@ -47,11 +53,6 @@ class OptionList extends Model
     public function options(): HasMany
     {
         return $this->hasMany(Option::class, 'option_list_id');
-    }
-
-    public function activeOptions(): HasMany
-    {
-        return $this->options()->where('is_active', true);
     }
 
     public function items(): BelongsToMany

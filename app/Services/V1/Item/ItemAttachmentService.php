@@ -4,95 +4,71 @@ namespace App\Services\V1\Item;
 
 use App\Contracts\V1\Item\ItemAttachmentServiceInterface;
 use App\Contracts\V1\Item\ItemRepositoryInterface;
-use App\Models\V1\Ingredient;
+use App\DTO\V1\Ingredient\IngredientPivotDTO;
+use App\DTO\V1\Option\OptionPivotDTO;
+use App\DTO\V1\OptionList\OptionListPivotDTO;
 use App\Models\V1\Item;
-use App\Models\V1\Option;
-use App\Traits\V1\Repository\ManagesPivotRelations;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 readonly class ItemAttachmentService implements ItemAttachmentServiceInterface
 {
-    use ManagesPivotRelations;
-
-    private const array OPTION_PIVOT_COLUMNS = [
-        'store_id',
-        'name',
-        'description',
-        'price_cents',
-        'is_active'
-    ];
-
-    private const array INGREDIENT_PIVOT_COLUMNS = [
-        'store_id',
-        'name',
-        'description',
-        'cost_per_unit_cents',
-        'unit',
-        'is_active',
-        'is_mandatory',
-        'is_allergen',
-    ];
 
     public function __construct(
-        private ItemRepositoryInterface $itemRepository
-    ){}
+        private ItemRepositoryInterface $repository,
+    ) {}
 
-    public function attachOptions(Item $item, array $options): Collection
+    public function attachIngredient(Item $item, array|IngredientPivotDTO $data): void
     {
-        return DB::transaction(function () use ($item, $options) {
-            $syncData = [];
-            foreach ($options as $dto) {
-                $syncData[$dto->getPivotKey()] = $dto->getPivotData();
-            }
-
-            return $this->syncPivotData(
-                model: $item,
-                relation: 'options',
-                data: $syncData,
-                pivotColumns: self::OPTION_PIVOT_COLUMNS
-            );
+        DB::transaction(function () use($item, $data){
+            $this->repository->bulkAttachRelation($item->id, 'ingredients', is_array($data) ? $data : [$data->getPivotKey() => $data->getPivotData()]);
+            $this->clearCache($item->store_id);
         });
     }
 
-    public function attachIngredients(Item $item, array $ingredients): Collection
+    public function detachIngredient(Item $item, int $ingredientId): void
     {
-        return DB::transaction(function () use ($item, $ingredients) {
-            $syncData = [];
-            foreach ($ingredients as $dto) {
-                $syncData[$dto->getPivotKey()] = $dto->getPivotData();
-            }
-
-            return $this->syncPivotData(
-                model: $item,
-                relation: 'ingredients',
-                data: $syncData,
-                pivotColumns: self::INGREDIENT_PIVOT_COLUMNS
-            );
+        DB::transaction(function () use ($item, $ingredientId){
+            $this->repository->detachRelation($item->id, 'ingredients', $ingredientId);
+            $this->clearCache($item->store_id);
         });
     }
 
-    public function detachOption(Item $item, Option $option): bool
+    public function attachOption(Item $item, array|OptionPivotDTO $data): void
     {
-        return DB::transaction(function () use ($item, $option) {
-            $item->options()->detach($option->id);
-            return true;
+        DB::transaction(function () use($item, $data){
+            $this->repository->bulkAttachRelation($item->id, 'options', is_array($data) ? $data : [$data->getPivotKey() => $data->getPivotData()]);
+            $this->clearCache($item->store_id);
         });
     }
 
-    public function detachIngredient(Item $item, Ingredient $ingredient): bool
+    public function detachOption(Item $item, int $optionId): void
     {
-        return DB::transaction(function () use ($item, $ingredient) {
-            $item->ingredients()->detach($ingredient->id);
-            return true;
+        DB::transaction(function () use ($item, $optionId) {
+            $this->repository->detachRelation($item->id, 'options', $optionId);
+            $this->clearCache($item->store_id);
         });
     }
 
-    public function detachIngredients(Item $item, array $ingredientIds): bool
+    public function attachOptionList(Item $item, array|OptionListPivotDTO $data): void
     {
-        return DB::transaction(function () use ($item, $ingredientIds) {
-            $item->ingredients()->detach($ingredientIds);
-            return true;
+        DB::transaction(function () use($item, $data){
+            $this->repository->bulkAttachRelation($item->id, 'optionLists', is_array($data) ? $data : [$data->getPivotKey() => $data->getPivotData()]);
+            $this->clearCache($item->store_id);
         });
+    }
+
+    public function detachOptionList(Item $item, int $optionListId): void
+    {
+        DB::transaction(function () use ($item, $optionListId) {
+            $this->repository->detachRelation($item->id, 'optionLists', $optionListId);
+            $this->clearCache($item->store_id);
+        });
+    }
+
+    private function clearCache(int $storeId): void
+    {
+        Cache::tags(['items'])->flush();
+        Cache::forget('items.store.' . $storeId);
     }
 }

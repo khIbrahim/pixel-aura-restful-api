@@ -45,9 +45,9 @@ trait HasAdvancedFiltering
 
     protected function applyNestedFilter(Builder $query, string $key, mixed $value): void
     {
-        $parts = explode('.', $key);
+        $parts    = explode('.', $key);
         $relation = array_shift($parts);
-        $field = implode('.', $parts);
+        $field    = implode('.', $parts);
 
         $query->whereHas($relation, function ($q) use ($field, $value) {
             $q->where($field, $value);
@@ -62,9 +62,9 @@ trait HasAdvancedFiltering
             'gt', 'gte'     => $query->where($field, $operator === 'gt' ? '>' : '>=', $value),
             'lt', 'lte'     => $query->where($field, $operator === 'lt' ? '<' : '<=', $value),
             'ne', 'not'     => $query->where($field, '!=', $value),
-            'like', 'ilike' => $query->where($field, 'LIKE', "%{$value}%"),
-            'starts'        => $query->where($field, 'LIKE', "{$value}%"),
-            'ends'          => $query->where($field, 'LIKE', "%{$value}"),
+            'like', 'ilike' => $query->where($field, 'LIKE', "%$value%"),
+            'starts'        => $query->where($field, 'LIKE', "$value%"),
+            'ends'          => $query->where($field, 'LIKE', "%$value"),
             'in'            => $query->whereIn($field, is_array($value) ? $value : explode(',', $value)),
             'notin'         => $query->whereNotIn($field, is_array($value) ? $value : explode(',', $value)),
             'null'          => $query->whereNull($field),
@@ -98,7 +98,7 @@ trait HasAdvancedFiltering
 
             if (str_starts_with($sort, '-')) {
                 $direction = 'desc';
-                $sort = substr($sort, 1);
+                $sort      = substr($sort, 1);
             }
 
             if (str_contains($sort, '.')) {
@@ -113,8 +113,8 @@ trait HasAdvancedFiltering
 
     protected function applyNestedSorting(Builder $query, string $field, string $direction): void
     {
-        $parts = explode('.', $field);
-        $relation = array_shift($parts);
+        $parts         = explode('.', $field);
+        $relation      = array_shift($parts);
         $relationField = implode('.', $parts);
 
         $query->join(

@@ -3,10 +3,11 @@
 namespace App\DTO\V1\StoreMember;
 
 use App\Constants\V1\Defaults;
+use App\DTO\V1\Abstract\BaseDTO;
 use App\Enum\StoreMemberRole;
 use App\Models\V1\Store;
 
-final readonly class CreateStoreMemberDTO
+final readonly class CreateStoreMemberDTO extends BaseDTO
 {
 
     public function __construct(
@@ -39,4 +40,16 @@ final readonly class CreateStoreMemberDTO
         );
     }
 
+    public function toArray(): array
+    {
+        return [
+            'store_id'    => $this->storeId,
+            'name'        => $this->name,
+            'role'        => $this->role->value,
+            'pin'         => $this->pin,
+            'is_active'   => $this->isActive,
+            'meta'        => $this->meta,
+            'permissions' => $this->permissions,
+        ];
+    }
 }

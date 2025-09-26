@@ -16,10 +16,6 @@ return new class extends Migration
             $table->foreignId('store_id')
                 ->constrained('stores')
                 ->cascadeOnDelete();
-            $table->foreignId('option_list_id')
-                ->constrained('option_lists')
-                ->cascadeOnDelete()
-                ->nullable();
 
             $table->string('name', 255);
             $table->text('description')->nullable();

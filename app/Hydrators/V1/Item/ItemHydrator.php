@@ -61,7 +61,6 @@ readonly class ItemHydrator
 
         $data  = $request->validated();
         $image = $data['image'] ?? $data['image_url'] ?? null;
-        $type  = $data['type'] ?? null;
 
         return new CreateItemDTO(
             name: $name,

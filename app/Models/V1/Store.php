@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int         $id
  * @property string      $name
- * @property string      $slug
+ * @property string      $sku
  * @property int         $owner_id
  * @property null|string $email
  * @property null|string $phone
@@ -23,8 +23,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property null|string $currency
  * @property null|string $language
  * @property null|string $timezone
- * @property bool        $tax_inclusive
- * @property float       $default_vat_rate
  * @property array       $settings
  * @property int         $menu_version
  * @property bool        $is_active
@@ -39,7 +37,7 @@ class Store extends Model
 
     protected $fillable = [
         'name',
-        'slug',
+        'sku',
         'owner_id',
         'phone',
         'email',
@@ -50,11 +48,8 @@ class Store extends Model
         'currency',
         'language',
         'timezone',
-        'tax_inclusive',
-        'default_vat_rate',
         'receipt_settings',
         'settings',
-        'menu_version',
         'is_active',
     ];
 
@@ -62,8 +57,6 @@ class Store extends Model
         'receipt_settings' => 'array',
         'settings'         => 'array',
         'is_active'        => 'boolean',
-        'tax_inclusive'    => 'boolean',
-        'default_vat_rate' => 'decimal:2',
 //        'phone'            => E164PhoneNumberCast::class . ':AUTO'
     ];
 
@@ -82,9 +75,29 @@ class Store extends Model
         return $this->hasMany(Device::class);
     }
 
-    public function catalogs(): HasMany
+    public function items(): HasMany
     {
-        return $this->hasMany(Catalog::class);
+        return $this->hasMany(Item::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
+    }
+
+    public function options(): HasMany
+    {
+        return $this->hasMany(Option::class);
+    }
+
+    public function ingredients(): HasMany
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function optionLists(): HasMany
+    {
+        return $this->hasMany(OptionList::class);
     }
 
     public function isActive(): bool

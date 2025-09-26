@@ -24,8 +24,7 @@ class OptionListRepository extends BaseRepository implements OptionListRepositor
         return OptionList::class;
     }
 
-
-    public function findByStoreWithRelations(int $storeId, array $relations = ['options', 'activeOptions']): Collection
+    public function findByStoreWithRelations(int $storeId, array $relations = ['options']): Collection
     {
         return $this->cacheQuery(
             $this->with($relations)->where('store_id', $storeId)->where('is_active', true),
@@ -39,7 +38,7 @@ class OptionListRepository extends BaseRepository implements OptionListRepositor
         $query = $this->query()
             ->where('store_id', $storeId)
             ->where('is_active', true)
-            ->with(['options', 'activeOptions']);
+            ->with(['options']);
 
         $query = $this->applyAdvancedFilters($filters, $query);
 
@@ -80,7 +79,7 @@ class OptionListRepository extends BaseRepository implements OptionListRepositor
     {
         return $this->batchUpdate(
             ['id' => $optionListIds],
-            ['is_active' => $isActive],
+            ['is_active' => (int) $isActive],
             500
         );
     }

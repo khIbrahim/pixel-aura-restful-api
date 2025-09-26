@@ -29,7 +29,7 @@ class MeResource extends JsonResource
                 'expiresAt'  => $token->expires_at?->toISOString(),
                 'lastUsedAt' => $token->last_used_at?->toISOString(),
                 'createdAt'  => $token->created_at?->toISOString(),
-            ]
+            ],
         ];
     }
 }

@@ -3,57 +3,27 @@
 namespace App\Repositories\V1\Item;
 
 use App\Contracts\V1\Item\ItemRepositoryInterface;
-use App\DTO\V1\Ingredient\CreateIngredientDTO;
-use App\DTO\V1\Item\CreateItemDTO;
 use App\DTO\V1\Item\CreateVariantDTO;
-use App\DTO\V1\Option\CreateOptionDTO;
-use App\Models\V1\Ingredient;
 use App\Models\V1\Item;
 use App\Models\V1\ItemVariant;
-use App\Models\V1\Option;
 use App\Repositories\V1\BaseRepository;
+use App\Traits\V1\Repository\HasAdvancedFiltering;
+use App\Traits\V1\Repository\HasBatchOperations;
+use App\Traits\V1\Repository\HasCaching;
+use App\Traits\V1\Repository\ManagesRelations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class ItemRepository extends BaseRepository implements ItemRepositoryInterface
 {
+    use HasCaching, ManagesRelations, HasBatchOperations, HasAdvancedFiltering;
 
-    public function __construct()
-    {
-    }
-
-    public function createItem(CreateItemDTO $data): Item
-    {
-        return Item::query()->create($data->toArray());
-    }
+    protected array $cacheTags = ['items'];
 
     public function createVariant(Item $item, CreateVariantDTO $data): ItemVariant
     {
         return $item->variants()->create($data->toArray());
-    }
-
-    public function attachIngredient(Item $item, Ingredient $ingredient, CreateIngredientDTO $data): void
-    {
-        $item->ingredients()->attach($ingredient->id, [
-            'is_mandatory'        => $data->is_mandatory,
-            'is_active'           => $data->is_active,
-            'store_id'            => $data->store_id,
-            'name'                => $data->name,
-            'is_allergen'         => $data->is_allergen,
-            'cost_per_unit_cents' => $data->cost_per_unit_cents,
-        ]);
-    }
-
-    public function attachOption(Item $item, Option $option, CreateOptionDTO $data): void
-    {
-        $item->options()->attach($option->id, [
-            'name'        => $data->name,
-            'store_id'    => $data->store_id,
-            'price_cents' => $data->price_cents,
-            'is_active'   => $data->is_active,
-        ]);
     }
 
     public function bulkCreateVariants(Item $item, array $variants): void
@@ -120,43 +90,6 @@ class ItemRepository extends BaseRepository implements ItemRepositoryInterface
 
         return $query->paginate($perPage);
     }
-
-   public function attachOptions(Item $item, array $options): Collection
-   {
-       return DB::transaction(function () use ($item, $options) {
-           $values = implode(", ", array_map(
-               function($option) use ($item) {
-                   $id          = (int) $option['option_id'];
-                   $storeId     = $item->store_id;
-                   $name        = addslashes($option['name']);
-                   $description = addslashes($option['description'] ?? '');
-                   $priceCents  = (int) $option['price_cents'];
-                   $isActive    = $option['is_active'] ? 1 : 0;
-                   $createdAt   = $updatedAt = now()->toDateTimeString();
-                   return "($item->id, $storeId, $id, '$name', '$description', $priceCents, $isActive, '$createdAt', '$updatedAt')";
-               },
-               $options
-           ));
-
-           $sql = "
-               INSERT INTO item_options (item_id, store_id, option_id, name, description, price_cents, is_active, created_at, updated_at)
-               VALUES $values
-               ON DUPLICATE KEY UPDATE
-                   name        = VALUES(name),
-                   description = VALUES(description),
-                   price_cents = VALUES(price_cents),
-                   is_active   = VALUES(is_active),
-                   updated_at  = VALUES(updated_at)
-           ";
-
-           DB::statement($sql);
-
-           $item->unsetRelation('options');
-           return $item->options()
-               ->withPivot(['name', 'description', 'price_cents', 'is_active'])
-               ->get();
-       });
-   }
 
     public function model(): string
     {

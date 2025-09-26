@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1/option-lists')
     ->middleware(['auth:sanctum', 'device.ctx', 'device.throttle:per-device', 'correlate', 'store_member'])
     ->group(function() {
-
-        // CRUD de base
         Route::get('/', [OptionListController::class, 'index'])
             ->name('option-lists.index')
             ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_READ]);
@@ -28,16 +26,4 @@ Route::prefix('v1/option-lists')
         Route::delete('/{optionList}', [OptionListController::class, 'destroy'])
             ->name('option-lists.destroy')
             ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_DELETE]);
-
-        Route::get('/search/query', [OptionListController::class, 'search'])
-            ->name('option-lists.search')
-            ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_READ]);
-
-        Route::patch('/bulk/status', [OptionListController::class, 'bulkUpdateStatus'])
-            ->name('option-lists.bulk-status')
-            ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_UPDATE]);
-
-        Route::post('/items/{item}/attach', [OptionListController::class, 'attachToItem'])
-            ->name('option-lists.items.attach')
-            ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_UPDATE]);
     });

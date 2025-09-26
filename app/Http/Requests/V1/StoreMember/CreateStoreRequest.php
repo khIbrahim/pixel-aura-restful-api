@@ -7,24 +7,21 @@ use App\Rules\V1\LanguageRule;
 use App\Rules\V1\TimezoneRule;
 use DateTimeZone;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Locale;
 
-class StoreStoreRequest extends FormRequest
+class CreateStoreRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
     }
-
     public function rules(): array
     {
         return [
             'name'             => ['required', 'string', 'min:5', 'max:120', Rule::unique('stores', 'name')],
-            'slug'             => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('stores', 'slug')],
+            'sku'              => ['nullable', 'string', 'min:2', 'max:100', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('stores', 'sku')],
             'phone'            => ['nullable', 'phone:ZZ'],
             'email'            => ['nullable', 'email', 'max:255', Rule::unique('stores')],
 
@@ -37,10 +34,8 @@ class StoreStoreRequest extends FormRequest
             'language'         => ['nullable', new LanguageRule()],
             'timezone'         => ['nullable', new TimezoneRule()],
 
-            'tax_inclusive'    => ['boolean'],
-            'default_vat_rate' => ['numeric', 'between:0,100'],
 
-                'receipt_settings'             => ['nullable', 'array'],
+            'receipt_settings'             => ['nullable', 'array'],
             'receipt_settings.header_text' => ['nullable', 'string', 'max:500'],
             'receipt_settings.footer_text' => ['nullable', 'string', 'max:500'],
             'receipt_settings.print_logo'  => ['boolean'],
@@ -59,8 +54,8 @@ class StoreStoreRequest extends FormRequest
         return [
             'name.required'      => 'Le nom du magasin est obligatoire',
             'name.min'           => 'Le nom doit contenir au moins 2 caractères',
-            'slug.unique'        => 'Ce nom court est déjà utilisé',
-            'slug.regex'         => 'Le nom court ne peut contenir que des lettres minuscules, chiffres et tirets',
+            'sku.unique'         => 'Ce nom court est déjà utilisé',
+            'sku.regex'          => 'Le nom court ne peut contenir que des lettres minuscules, chiffres et tirets',
             'email.unique'       => 'Cet email est déjà utilisé',
             'country.size'       => 'Le code pays doit être au format ISO (ex: FR)',
             'currency.size'      => 'La devise doit être au format ISO (ex: EUR)',
@@ -71,10 +66,6 @@ class StoreStoreRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $data = [];
-
-        if(! $this->has('slug') && $this->has('name')){
-            $data['slug'] = Str::slug($this->name);
-        }
 
         $preferred = $this->getPreferredLanguage();
         $locale    = str_replace('-', '_', $preferred ?: '');
@@ -94,9 +85,6 @@ class StoreStoreRequest extends FormRequest
         $data['currency'] = $currency;
         $data['timezone'] = $timezone;
         $data['language'] = $language;
-
-        $data['tax_inclusive'] = $this->tax_inclusive ?? true;
-        $data['default_vat_rate'] = $this->default_vat_rate ?? 0.00;
 
         $this->merge($data);
     }

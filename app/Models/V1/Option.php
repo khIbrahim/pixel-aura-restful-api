@@ -21,6 +21,7 @@ use Spatie\MediaLibrary\HasMedia;
  * @property null|string $description Description de l'option
  * @property int         $price_cents Prix de l'option en centimes
  * @property bool        $is_active Indique si l'option est active et disponible
+ * @property int         $option_list_id Identifiant de la liste d'options associée
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
@@ -37,11 +38,14 @@ class Option extends Model implements HasMedia, DefinesMediaPath
         'store_id',
         'price_cents',
         'is_active',
+        'option_list_id',
     ];
 
     protected $casts = [
-        'price_cents' => 'integer',
-        'is_active'   => 'boolean',
+        'price_cents'    => 'integer',
+        'is_active'      => 'boolean',
+        'store_id'       => 'integer',
+        'option_list_id' => 'integer',
     ];
 
     public function items(): BelongsToMany

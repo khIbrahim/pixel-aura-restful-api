@@ -14,7 +14,7 @@ class MeController extends Controller
         return new MeResource(resource: [
             'store'  => $request->store(),
             'device' => $request->device(),
-            'token'  => $request->user()->currentAccessToken()
+            'token'  => $request->user()->currentAccessToken(),
         ]);
     }
 

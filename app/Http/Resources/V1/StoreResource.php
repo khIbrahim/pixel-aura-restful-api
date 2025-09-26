@@ -21,7 +21,7 @@ class StoreResource extends JsonResource
         return [
             'id'             => $this->id,
             'name'           => $this->name,
-            'slug'           => $this->slug,
+            'slug'           => $this->sku,
             'phone'          => $this->phone,
             'email'          => $this->email,
 

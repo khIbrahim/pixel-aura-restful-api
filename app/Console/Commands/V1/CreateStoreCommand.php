@@ -281,7 +281,7 @@ class CreateStoreCommand extends Command
             [
                 ['ID', $store->id],
                 ['Nom', $store->name],
-                ['Slug', $store->slug],
+                ['Slug', $store->sku],
                 ['Propriétaire', $store->owner->name],
                 ['Email propriétaire', $store->owner->email],
                 ['Devise', $store->currency],

@@ -20,7 +20,7 @@ class TokenNameService
     {
         return implode("-", [
             self::OWNER_PREFIX,
-            $store->slug,
+            $store->sku,
             now()->timestamp
         ]);
     }
@@ -38,7 +38,7 @@ class TokenNameService
     public static function forApiIntegration(Store $store, string $integration): string
     {
         return implode("-", [
-            $store->slug,
+            $store->sku,
             $integration,
             now()->timestamp
         ]);

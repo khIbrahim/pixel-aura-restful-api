@@ -9,6 +9,9 @@ use Illuminate\Support\Str;
 class SkuGeneratorService
 {
 
+    /**
+     * @throws FailedToGenerateUniqueSkuException
+     */
     public function generateSku(string $name, int $storeId, bool $isVariant = false, ?string $variantName = null, ?int $parentItemId = null): string
     {
         $baseSku = $this->buildBaseSku($name, $variantName, $isVariant);
