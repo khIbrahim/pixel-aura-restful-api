@@ -8,7 +8,6 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreMediaRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
@@ -17,16 +16,8 @@ class StoreMediaRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image'      => ['nullable', new ImageRule(), 'prohibits:image_url'],
-            'image_url'  => ['nullable', new ImageUrlRule(), 'prohibits:image'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'image.prohibits'     => 'Vous pouvez fournir uniquement une image ou une URL d\'image',
-            'image_url.prohibits' => 'Vous pouvez fournir uniquement une image ou une URL d\'image',
+            'image'     => ['required_without:image_url', new ImageRule()],
+            'image_url' => ['required_without:image', new ImageUrlRule()],
         ];
     }
 }

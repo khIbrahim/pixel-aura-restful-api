@@ -3,16 +3,13 @@
 namespace App\Models\V1;
 
 use App\Contracts\V1\Media\DefinesMediaPath;
-use App\Traits\V1\Media\HasOptimizedMedia;
+use App\Traits\V1\Media\HasImages;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Nette\Utils\FileSystem;
-use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * @property int           $id
@@ -32,7 +29,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  */
 class Category extends Model implements HasMedia, DefinesMediaPath
 {
-    use InteractsWithMedia, HasOptimizedMedia;
+    use HasImages;
 
     protected $fillable = [
         'store_id',
@@ -78,38 +75,6 @@ class Category extends Model implements HasMedia, DefinesMediaPath
             'categories',
             $this->id . '-' . $this->slug
         ) . '/';
-    }
-
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('category_images')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml']);
-    }
-
-    public function registerMediaConversions(?Media $media = null): void
-    {
-        $this->addMediaConversion('thumbnail')
-            ->fit(Fit::Crop, 300, 300)
-            ->format('webp')
-            ->quality(85)
-            ->optimize()
-            ->nonQueued()
-            ->performOnCollections('category_images');
-
-        $this->addMediaConversion('medium')
-            ->fit(Fit::Crop, 800, 800)
-            ->format('webp')
-            ->quality(90)
-            ->optimize()
-            ->nonQueued()
-            ->performOnCollections('category_images');
-
-        $this->addMediaConversion('optimized')
-            ->quality(95)
-            ->optimize()
-            ->nonQueued()
-            ->performOnCollections('category_images');
     }
 
 }

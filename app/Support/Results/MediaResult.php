@@ -25,4 +25,9 @@ final class MediaResult extends Result
         return $this->media;
     }
 
+    public static function successDelete(string $message, array $urls = []): self
+    {
+        return new self(true, $message, [], $urls);
+    }
+
 }

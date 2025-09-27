@@ -15,7 +15,6 @@ use App\Providers\V1\StoreMemberServiceProvider;
 use App\Providers\V1\StoreServiceProvider;
 use App\Services\V1\Media\ImageProcessor;
 use App\Services\V1\Media\MediaManager;
-use App\Services\V1\Media\MediaUrlGenerator;
 use App\Services\V1\Media\MediaValidator;
 use App\Services\V1\Media\UrlImageDownloader;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -44,7 +43,6 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(MediaValidator::class);
         $this->app->singleton(UrlImageDownloader::class);
         $this->app->singleton(ImageProcessor::class);
-        $this->app->singleton(MediaUrlGenerator::class);
     }
 
     public function boot(): void

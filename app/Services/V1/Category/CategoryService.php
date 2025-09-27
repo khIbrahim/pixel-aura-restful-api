@@ -4,26 +4,21 @@ namespace App\Services\V1\Category;
 
 use App\Contracts\V1\Category\CategoryRepositoryInterface;
 use App\Contracts\V1\Category\CategoryServiceInterface;
-use App\Contracts\V1\Media\MediaManagerInterface;
 use App\DTO\V1\Category\CreateCategoryDTO;
 use App\DTO\V1\Category\UpdateCategoryDTO;
-use App\DTO\V1\Media\MediaUploadOptions;
 use App\Events\V1\Category\CategoryCreated;
 use App\Events\V1\Category\CategoryDeleted;
 use App\Events\V1\Category\CategoryUpdated;
 use App\Exceptions\V1\Category\CategorySlugAlreadyExistsException;
 use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Models\V1\Category;
-use App\Support\Results\MediaResult;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 
 readonly class CategoryService implements CategoryServiceInterface
 {
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
-        private MediaManagerInterface $mediaManager,
     ){}
 
     public function create(CreateCategoryDTO $data): Category
@@ -175,15 +170,4 @@ readonly class CategoryService implements CategoryServiceInterface
         }
     }
 
-    public function uploadImage(Category $category, UploadedFile|string $file, string $type): MediaResult
-    {
-        $options = MediaUploadOptions::fromCategoryImage();
-
-        return $this->mediaManager->replaceImage($category, $file, $options);
-    }
-
-    public function deleteImage(Category $category, ?int $mediaId = null): void
-    {
-        $this->mediaManager->deleteImage($category, 'category_images', $mediaId);
-    }
 }

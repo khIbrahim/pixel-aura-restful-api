@@ -4,6 +4,7 @@ use App\Http\Middleware\V1\CheckAbility;
 use App\Http\Middleware\V1\CorrelateRequest;
 use App\Http\Middleware\V1\EnsureDeviceContext;
 use App\Http\Middleware\V1\EnsureStoreMember;
+use App\Http\Middleware\V1\Media\HasMediaMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,7 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'device.throttle' => ThrottleRequests::class,
             'correlate'       => CorrelateRequest::class,
             'ability'         => CheckAbility::class,
-            'store_member'    => EnsureStoreMember::class
+            'store_member'    => EnsureStoreMember::class,
+            'has_media'      => HasMediaMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

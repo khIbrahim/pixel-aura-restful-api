@@ -7,9 +7,7 @@ use App\DTO\V1\Category\UpdateCategoryDTO;
 use App\Exceptions\V1\Category\CategorySlugAlreadyExistsException;
 use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Models\V1\Category;
-use App\Support\Results\MediaResult;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Http\UploadedFile;
 
 interface CategoryServiceInterface
 {
@@ -38,9 +36,5 @@ interface CategoryServiceInterface
      * @param array $filters search,parent_id,is_active,with(array)
      */
     public function list(int $storeId, array $filters = [], int $perPage = 25): LengthAwarePaginator;
-
-    public function uploadImage(Category $category, UploadedFile|string $file, string $type): MediaResult;
-
-    public function deleteImage(Category $category, ?int $mediaId = null): void;
 
 }

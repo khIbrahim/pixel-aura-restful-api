@@ -28,16 +28,4 @@ Route::prefix('v1/categories')
 
         Route::patch('{category}/activation', [CategoriesController::class, 'toggleActivation'])
             ->middleware(['ability:' . StoreTokenAbilities::CATEGORY_ACTIVATE]);
-
-        /** Images */
-        Route::prefix('{category}/images')->group(function () {
-            Route::post('/', [CategoriesController::class, 'uploadImage'])
-                ->middleware(['ability:' . StoreTokenAbilities::CATEGORY_UPDATE]);
-
-            Route::delete('/{image?}', [CategoriesController::class, 'deleteImage'])
-                ->middleware(['ability:' . StoreTokenAbilities::CATEGORY_UPDATE]);
-
-            Route::get('/{image?}', [CategoriesController::class, 'listImages'])
-                ->middleware(['ability:' . StoreTokenAbilities::CATEGORY_READ]);
-        });
     });

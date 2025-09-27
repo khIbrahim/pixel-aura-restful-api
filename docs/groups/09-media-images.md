@@ -6,13 +6,10 @@ Objectif
 
 Architecture
 - Stockage: S3/Minio (voir `config/filesystems.php`, disques `s3`, `minio`; docker-compose fournit le service Minio).
-- Lib: Spatie MediaLibrary (conversions, responsive), services custom `MediaManager`, `ImageProcessor`, `MediaValidator`, `MediaUrlGenerator`.
+- Lib: Spatie MediaLibrary (conversions, responsive), services custom `MediaManager`, `ImageProcessor`, `MediaValidator`.
 - Configs:
   - `config/media-management.php`: collections, conversions, validation (mimes/taille/dimensions), URL processing, sécurité.
   - `config/media-library.php`: en-têtes S3 (CacheControl), lifetime des URLs temporaires, responsive images.
-- Modèles concernés:
-  - Category: implémente HasMedia, conversions (thumbnail/medium/optimized); chemin base: `stores/{store_id}/categories/{id}-{slug}/`.
-  - Item: collections prévues (ex: main_image, gallery), via `MediaUploadOptions::fromItemImage()`.
 
 Variables d’environnement clés
 - S3 (Cloud) ou Minio (local):
@@ -164,11 +161,13 @@ Payload “images” standard dans les resources
       "size_bytes": 482133,
       "width": 800,
       "height": 800,
-      "created_at": "2025-09-26T12:34:56Z",
-      "original": "https://cdn.example.com/.../item-123.webp",
-      "thumbnail": "https://cdn.example.com/.../item-123-thumbnail.webp",
-      "banner": "https://cdn.example.com/.../item-123-banner.webp",
-      "icon": "https://cdn.example.com/.../item-123-icon.webp"
+      "urls": {
+          "created_at": "2025-09-26T12:34:56Z",
+          "original": "https://cdn.example.com/.../item-123.webp",
+          "thumbnail": "https://cdn.example.com/.../item-123-thumbnail.webp",
+          "banner": "https://cdn.example.com/.../item-123-banner.webp",
+          "icon": "https://cdn.example.com/.../item-123-icon.webp"
+      }
     },
     "gallery": [
       {
@@ -179,10 +178,12 @@ Payload “images” standard dans les resources
         "width": 800,
         "height": 800,
         "created_at": "2025-09-26T12:35:10Z",
-        "original": "https://cdn.example.com/.../item-123-1.webp",
-        "thumbnail": "https://cdn.example.com/.../item-123-1-thumbnail.webp",
-        "banner": "https://cdn.example.com/.../item-123-1-banner.webp",
-        "icon": "https://cdn.example.com/.../item-123-1-icon.webp"
+        "urls": {
+            "original": "https://cdn.example.com/.../item-123-1.webp",
+            "thumbnail": "https://cdn.example.com/.../item-123-1-thumbnail.webp",
+            "banner": "https://cdn.example.com/.../item-123-1-banner.webp",
+            "icon": "https://cdn.example.com/.../item-123-1-icon.webp"
+        }
       }
     ]
   }
@@ -225,6 +226,5 @@ Roadmap V1.1
 - Scan antivirus (ClamAV) et stripping EXIF.
 
 Annexes
-- `MediaUploadOptions::fromCategoryImage()` et `fromItemImage()` à utiliser côté services.
 - `config/media-management.php` centralise la validation et les conversions par collection.
 - Minio docker-compose: Console http://localhost:9001, S3 http://localhost:9000.

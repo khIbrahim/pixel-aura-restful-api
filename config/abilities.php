@@ -167,6 +167,11 @@ return [
         'option_list.read'      => "Lire une liste d'options",
         'option_list.update'    => "Mettre à jour une liste d'options",
         'option_list.delete'    => "Supprimer une liste d'options",
+
+        // Media
+        'media.view'      => 'Voir les médias',
+        'media.upload'    => 'Uploader des médias',
+        'media.delete'    => 'Supprimer des médias',
     ],
 
     /*
@@ -250,6 +255,10 @@ return [
         'option_list.manage' => [
             'option_list.create', 'option_list.update', 'option_list.read', 'option_list.delete'
         ],
+
+        'media.manage' => [
+            'media.view', 'media.upload', 'media.delete'
+        ],
     ],
 
     /*
@@ -263,7 +272,8 @@ return [
             '@sales.full','@devices.full','@stock.full','@loyalty.full','@reporting.full','@rgpd',
             '@delivery.full','@tax.full','@session.cash','@ticket','@price.runtime',
             'customer.read','customer.create','customer.update','customer.delete',
-            '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage'
+            '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage',
+            '@media.manage'
         ],
 
         StoreMemberRole::Manager->value => [
@@ -280,7 +290,8 @@ return [
             '@session.cash','@ticket','@price.runtime',
             'members.auth','members.logout',
             'tax.read','tax.update',
-            '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage'
+            '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage',
+            '@media.manage'
         ],
 
         StoreMemberRole::Cashier->value => [
@@ -299,7 +310,7 @@ return [
             'price.override',
             'ingredient.read',
             'option.read',
-            'option_list.read'
+            'option_list.read',
         ],
 
         StoreMemberRole::Kitchen->value => [

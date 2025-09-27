@@ -18,7 +18,6 @@ readonly class MediaManager implements MediaManagerInterface
     public function __construct(
         private MediaValidator    $mediaValidator,
         private ImageProcessor    $imageProcessor,
-        private MediaUrlGenerator $urlGenerator,
     ){}
 
     public function uploadImage(Model $model, string|UploadedFile $file, MediaUploadOptions $options): MediaResult
@@ -43,7 +42,6 @@ readonly class MediaManager implements MediaManagerInterface
 
             /** @var Media $media */
             $media = $model->getMedia($options->collection)->last();
-            $urls  = $this->urlGenerator->generateUrls($media, $options);
 
             Log::info("Image uploadé avec succès", [
                 'model_type' => get_class($model),
@@ -52,7 +50,7 @@ readonly class MediaManager implements MediaManagerInterface
                 'media_id'   => $media->id,
             ]);
 
-            return MediaResult::successUpload($media, "Image uploadé avec succès", $urls);
+            return MediaResult::successUpload($media, "Image uploadé avec succès", $model->getImagesAttribute());
         } catch (Throwable $e){
             Log::error("Erreur lors de l'upload de l'image", [
                 'model_type' => get_class($model),
@@ -81,34 +79,41 @@ readonly class MediaManager implements MediaManagerInterface
         }
     }
 
-    public function deleteImage(Model $model, string $collection, ?int $mediaId = null): bool
+    public function deleteImage(Model $model, string $collection, ?int $mediaId = null): MediaResult
     {
         try {
             assert($model instanceof HasMedia);
             if ($mediaId) {
-                $media = $model->getMedia($collection)->find($mediaId);
-                $media?->delete();
-            } else {
-                $model->clearMediaCollection($collection);
+                /** @var Media $media */
+                $media   = $model->getMedia($collection)->find($mediaId);
+                $deleted = $media?->delete();
+                if ($deleted) {
+                    Log::info("Image supprimée avec succès", [
+                        'model_type' => get_class($model),
+                        'model_id'   => $model->getKey(),
+                        'collection' => $collection,
+                        'media_id'   => $mediaId,
+                    ]);
+                    return MediaResult::successDelete("Image supprimée avec succès", $model->getImagesAttribute());
+                } else {
+                    return MediaResult::failure("Image non trouvée ou déjà supprimée.");
+                }
             }
 
-            return true;
+            $model->clearMediaCollection($collection);
+            Log::info("Toutes les images de la collection '$collection' ont été supprimées avec succès", [
+                'model_type' => get_class($model),
+                'model_id'   => $model->getKey(),
+                'collection' => $collection,
+            ]);
+
+            return MediaResult::successDelete("Toutes les images de la collection '$collection' ont été supprimées avec succès", $model->getImagesAttribute());
         } catch (Throwable $e) {
             Log::error("La suppression de l'image a échoué", ['error' => $e->getMessage()]);
-            return false;
+
+            return MediaResult::failure("La suppression de l'image a échoué: " . $e->getMessage(), [
+                'error' => $e->getMessage(),
+            ]);
         }
-    }
-
-    public function getOptimizedUrl(Model $model, string $collection, string $conversion = ''): ?string
-    {
-        assert($model instanceof HasMedia);
-        /** @var Media $media */
-        $media = $model->getFirstMedia($collection);
-
-        if (! $media) {
-            return null;
-        }
-
-        return $conversion ? $media->getUrl($conversion) : $media->getUrl();
     }
 }

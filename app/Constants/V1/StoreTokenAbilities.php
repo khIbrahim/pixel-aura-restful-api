@@ -149,6 +149,11 @@ final class StoreTokenAbilities
     public const string OPTION_LIST_UPDATE = 'option_list.update';
     public const string OPTION_LIST_DELETE = 'option_list.delete';
 
+    // Medias
+    public const string MEDIA_VIEW   = 'media.view';
+    public const string MEDIA_UPLOAD = 'media.upload';
+    public const string MEDIA_DELETE = 'media.delete';
+
     public static function getAbilitiesByRole(StoreMemberRole $role): array
     {
         return match ($role) {

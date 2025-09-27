@@ -10,7 +10,6 @@ use App\Http\Requests\V1\Category\CreateCategoryRequest;
 use App\Http\Requests\V1\Category\UpdateCategoryRequest;
 use App\Http\Requests\V1\Category\ReorderCategoriesRequest;
 use App\Http\Requests\V1\Category\ToggleCategoryActivationRequest;
-use App\Http\Requests\V1\Category\UploadCategoryImageRequest;
 use App\Http\Resources\V1\CategoryResource;
 use App\Models\V1\Category;
 use Illuminate\Http\JsonResponse;
@@ -137,56 +136,6 @@ class CategoriesController extends Controller
         return response()->json([
             'message' => 'Statut mis à jour',
             'data'    => new CategoryResource($updated)
-        ]);
-    }
-
-    public function uploadImage(UploadCategoryImageRequest $request, Category $category): JsonResponse
-    {
-        $data  = $request->validated();
-        $image = $data['image'] ?? $data['image_url'];
-        $type  = $data['type'] ?? 'thumbnail';
-
-        $result = $this->categoryService->uploadImage($category, $image, $type);
-
-        if ($result->isFailure()) {
-            return response()->json([
-                'message' => "échec de l'upload de l'image",
-                'error'   => $result->errors
-            ], 422);
-        }
-
-        return response()->json([
-            'message' => 'Image uploadée avec succès',
-            'data' => new CategoryResource($category->fresh()),
-            'urls' => $result->toArray()
-        ]);
-    }
-
-    public function deleteImage(Category $category, ?int $mediaId = null): JsonResponse
-    {
-        if($mediaId && ! $category->media()->find($mediaId)) {
-            return response()->json([
-                'message' => "Image non trouvée"
-            ], 404);
-        }
-
-        $this->categoryService->deleteImage($category, $mediaId);
-
-        return response()->json([
-            'message' => "Image supprimée"
-        ]);
-    }
-
-    public function listImages(Category $category, ?int $mediaId = null): JsonResponse
-    {
-        if($mediaId && ! $category->media()->find($mediaId)) {
-            return response()->json([
-                'message' => "Image non trouvée"
-            ], 404);
-        }
-
-        return response()->json([
-            'data' => new CategoryResource($category)->formatImageObject()
         ]);
     }
 

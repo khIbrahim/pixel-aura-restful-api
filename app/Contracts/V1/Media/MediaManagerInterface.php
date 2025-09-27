@@ -14,7 +14,6 @@ interface MediaManagerInterface
 
     public function replaceImage(Model $model, UploadedFile|string $file, MediaUploadOptions $options): MediaResult;
 
-    public function deleteImage(Model $model, string $collection, ?int $mediaId = null): bool;
+    public function deleteImage(Model $model, string $collection, ?int $mediaId = null): MediaResult;
 
-    public function getOptimizedUrl(Model $model, string $collection, string $conversion = ''): ?string;
 }
