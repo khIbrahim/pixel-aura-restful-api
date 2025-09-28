@@ -5,8 +5,7 @@ namespace App\Http\Controllers\V1;
 use App\Contracts\V1\Item\ItemServiceInterface;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Item\UpdateItemRequest;
-use App\Http\Requests\V1\StoreMember\StoreItemRequest;
-use App\Http\Resources\V1\IngredientResource;
+use App\Http\Requests\V1\StoreMember\CreateItemRequest;
 use App\Http\Resources\V1\ItemResource;
 use App\Hydrators\V1\Item\ItemHydrator;
 use App\Models\V1\Item;
@@ -16,30 +15,30 @@ use Throwable;
 
 class ItemsController extends Controller
 {
-
     public function __construct(
         private readonly ItemServiceInterface $itemService,
-    ){}
+        private readonly ItemHydrator $itemHydrator,
+    ) {}
 
     /**
      * POST /api/v1/items
      */
-    public function store(StoreItemRequest $request, ItemHydrator $hydrator): JsonResponse
+    public function store(CreateItemRequest $request): JsonResponse
     {
-        $dto = $hydrator->fromRequest($request);
+        $dto = $this->itemHydrator->fromCreateRequest($request);
 
         try {
             $item = $this->itemService->create($dto);
             $item->load('category', 'tax', 'creator', 'variants', 'ingredients', 'options');
 
             return response()->json([
-                'message' => "Item créé avec succès",
-                'data'    => new ItemResource($item)
+                'message' => 'Item créé avec succès',
+                'data' => new ItemResource($item),
             ]);
-        } catch (Throwable $e){
+        } catch (Throwable $e) {
             return response()->json([
                 'message' => "Erreur lors de la création de l'item",
-                'error'   => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -50,54 +49,55 @@ class ItemsController extends Controller
     public function show(Item $item): JsonResponse
     {
         return response()->json([
-            'data' => new ItemResource($item->load('category', 'tax', 'creator', 'variants', 'ingredients', 'options', 'media'))
+            'data' => new ItemResource($item->load('category', 'tax', 'creator', 'variants', 'ingredients', 'options', 'media')),
         ]);
     }
 
     /**
-     * GET /api/v1/items/{item}/ingredients
+     * PUT/PATCH /api/v1/items/{item}
      */
-    public function listIngredients(Item $item): JsonResponse
+    public function update(UpdateItemRequest $request, Item $item): JsonResponse
     {
-        return response()->json([
-            'data' => IngredientResource::collection($item->load('ingredients')->ingredients)
-        ]);
-    }
+        $dto = $this->itemHydrator->fromUpdateRequest($request, $item);
 
-    /**
-     * GET /api/v1/items/{item}/options
-     */
-    public function listOptions(Item $item): JsonResponse
-    {
-        return response()->json([
-            'data' => IngredientResource::collection($item->load('options')->options)
-        ]);
-    }
+        try {
+            $updatedItem = $this->itemService->update($dto, $item);
 
-    /**
-     * GET /api/v1/items/{item}/variants
-     */
-    public function listVariants(Item $item): JsonResponse
-    {
-        return response()->json([
-            'data' => IngredientResource::collection($item->load('variants')->variants)
-        ]);
-    }
-
-    /**
-     * PUT /api/v1/items/{item}
-     */
-    public function update(UpdateItemRequest $request, Item $item)
-    {
-
+            return response()->json([
+                'message' => 'Item mis à jour avec succès',
+                'data' => new ItemResource($updatedItem),
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => "Erreur lors de la mise à jour de l'item",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**
      * DELETE /api/v1/items/{item}
      */
-    public function destroy(Item $item)
+    public function destroy(Item $item): JsonResponse
     {
+        try {
+            $deleted = $this->itemService->delete($item);
 
+            if ($deleted) {
+                return response()->json([
+                    'message' => 'Item supprimé avec succès',
+                ]);
+            }
+
+            return response()->json([
+                'message' => "Erreur lors de la suppression de l'item",
+            ], 500);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => "Erreur lors de la suppression de l'item",
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function index(Request $request): JsonResponse
@@ -114,9 +114,7 @@ class ItemsController extends Controller
                 'per_page'     => $categories->perPage(),
                 'total'        => $categories->total(),
                 'last_page'    => $categories->lastPage(),
-            ]
+            ],
         ]);
     }
-
-
 }

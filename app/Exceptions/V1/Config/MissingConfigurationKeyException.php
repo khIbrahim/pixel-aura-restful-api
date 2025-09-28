@@ -2,4 +2,6 @@
 
 namespace App\Exceptions\V1\Config;
 
-class MissingConfigurationKeyException extends \Exception{}
+use App\Exceptions\V1\BaseApiException;
+
+class MissingConfigurationKeyException extends BaseApiException {}

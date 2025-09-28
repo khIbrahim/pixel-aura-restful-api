@@ -71,7 +71,7 @@ class ItemResource extends JsonResource
             'category' => $this->whenLoaded('category', fn() => [
                 'id'   => $this->category->id,
                 'name' => $this->category->name,
-                'slug' => $this->category->slug,
+                'slug' => $this->category->sku,
             ]),
         ];
     }

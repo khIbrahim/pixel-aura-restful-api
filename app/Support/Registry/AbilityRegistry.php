@@ -2,8 +2,8 @@
 
 namespace App\Support\Registry;
 
+use App\Exceptions\V1\Ability\EmptyAbilitiesConfigurationException;
 use App\Exceptions\V1\Ability\UnknownAbilityException;
-use App\Exceptions\V1\Config\EmptyConfigException;
 use App\Exceptions\V1\Config\MissingConfigurationKeyException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -22,7 +22,7 @@ class AbilityRegistry
 
     /**
      * @throws MissingConfigurationKeyException
-     * @throws EmptyConfigException
+     * @throws EmptyAbilitiesConfigurationException
      */
     public function __construct()
     {
@@ -81,21 +81,22 @@ class AbilityRegistry
         $ability = "$domain.$action";
 
         if(! $this->abilityExists($ability)){
-            throw new UnknownAbilityException("L'ability '$ability' n'existe pas.");
+            throw UnknownAbilityException::fromName($ability);
         }
 
         return $ability;
     }
 
     /**
-     * @throws EmptyConfigException|MissingConfigurationKeyException
+     * @throws MissingConfigurationKeyException
+     * @throws EmptyAbilitiesConfigurationException
      */
     private function loadConfig(): void
     {
         $this->config = config('abilities', []);
 
         if (empty($this->config)){
-            throw new EmptyConfigException('Le fichier de configuration des abilities est vide.');
+            throw EmptyAbilitiesConfigurationException::default();
         }
 
         $this->validateConfig();

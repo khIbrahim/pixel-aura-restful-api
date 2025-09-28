@@ -3,9 +3,7 @@
 namespace App\Repositories\V1\Item;
 
 use App\Contracts\V1\Item\ItemRepositoryInterface;
-use App\DTO\V1\Item\CreateVariantDTO;
 use App\Models\V1\Item;
-use App\Models\V1\ItemVariant;
 use App\Repositories\V1\BaseRepository;
 use App\Traits\V1\Repository\HasAdvancedFiltering;
 use App\Traits\V1\Repository\HasBatchOperations;
@@ -17,28 +15,9 @@ use Illuminate\Support\Collection;
 
 class ItemRepository extends BaseRepository implements ItemRepositoryInterface
 {
-    use HasCaching, ManagesRelations, HasBatchOperations, HasAdvancedFiltering;
+    use HasAdvancedFiltering, HasBatchOperations, HasCaching, ManagesRelations;
 
     protected array $cacheTags = ['items'];
-
-    public function createVariant(Item $item, CreateVariantDTO $data): ItemVariant
-    {
-        return $item->variants()->create($data->toArray());
-    }
-
-    public function bulkCreateVariants(Item $item, array $variants): void
-    {
-        $rows = [];
-
-        /** @var CreateVariantDTO $variant */
-        foreach ($variants as $variant) {
-            $rows[] = array_merge($variant->toArray(), ['item_id' => $item->id, 'store_id' => $item->store_id, 'created_at' => now(), 'updated_at' => now()]);
-        }
-
-        ItemVariant::query()->insert($rows);
-
-        $item->load('variants');
-    }
 
     public function getItemsByCategory(int $categoryId): Collection
     {
@@ -68,9 +47,9 @@ class ItemRepository extends BaseRepository implements ItemRepositoryInterface
             $s = (string) $filters['search'];
             $query->where(function (Builder $q) use ($s) {
                 $q->where('name', 'like', "%$s%")
-                  ->orWhere('description', 'like', "%$s%")
-                  ->orWhere('sku', 'like', "%$s%")
-                  ->orWhereJsonContains('tags', $s);
+                    ->orWhere('description', 'like', "%$s%")
+                    ->orWhere('sku', 'like', "%$s%")
+                    ->orWhereJsonContains('tags', $s);
             });
         }
 
@@ -83,7 +62,7 @@ class ItemRepository extends BaseRepository implements ItemRepositoryInterface
         }
 
         if (! empty($filters['with'])) {
-            $with    = is_string($filters['with']) ? explode(',', $filters['with']) : $filters['with'];
+            $with = is_string($filters['with']) ? explode(',', $filters['with']) : $filters['with'];
             $allowed = ['variants', 'ingredients', 'options', 'category', 'tax', 'media', 'creator', 'media'];
             $query->with(array_intersect($allowed, $with));
         }

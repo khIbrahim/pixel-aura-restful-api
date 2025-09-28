@@ -8,14 +8,14 @@ final readonly class CreateCategoryDTO implements Arrayable
 {
 
     public function __construct(
-        public string      $name,
-        public ?string     $description,
-        public ?array      $tags,
-        public ?int        $position, // rendu nullable
-        public ?int        $parent_id,
-        public bool        $is_active,
-        public ?int        $store_id = null,
-        public ?string     $slug = null,
+        public string  $name,
+        public ?string $description,
+        public ?array  $tags,
+        public ?int    $position, // rendu nullable
+        public ?int    $parent_id,
+        public bool    $is_active,
+        public ?int    $store_id = null,
+        public ?string $sku = null,
     ){}
 
     public static function fromRequest(array $data): self
@@ -28,7 +28,7 @@ final readonly class CreateCategoryDTO implements Arrayable
             parent_id:   $data['parent_id'] ?? null,
             is_active:   $data['is_active'] ?? true,
             store_id:    $data['store_id'] ?? null,
-            slug:        $data['slug'] ?? null,
+            sku:         $data['slug'] ?? null,
         );
     }
 
@@ -42,7 +42,7 @@ final readonly class CreateCategoryDTO implements Arrayable
             'parent_id'   => $this->parent_id,
             'is_active'   => $this->is_active,
             'store_id'    => $this->store_id,
-            'slug'        => $this->slug,
+            'slug'        => $this->sku,
         ];
     }
 }

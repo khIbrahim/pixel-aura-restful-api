@@ -31,7 +31,7 @@ class ItemCreated implements ShouldBroadcast
 
     public function broadcastWith(): array
     {
-        return new ItemResource($this->item->load(['variants','ingredients','options','category','tax']))->resource;
+        return new ItemResource($this->item->load(['variants','ingredients','options','category','tax']))->toArray();
     }
 
 }

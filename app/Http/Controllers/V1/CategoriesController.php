@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\V1;
 
 use App\Contracts\V1\Category\CategoryServiceInterface;
-use App\Exceptions\V1\Category\CategorySlugAlreadyExistsException;
+use App\DTO\V1\Category\CreateCategoryDTO;
+use App\Exceptions\V1\Category\CategoryCreationException;
+use App\Exceptions\V1\Category\CategoryDeletionException;
+use App\Exceptions\V1\Category\CategoryUpdateException;
 use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Category\CreateCategoryRequest;
@@ -11,6 +14,7 @@ use App\Http\Requests\V1\Category\UpdateCategoryRequest;
 use App\Http\Requests\V1\Category\ReorderCategoriesRequest;
 use App\Http\Requests\V1\Category\ToggleCategoryActivationRequest;
 use App\Http\Resources\V1\CategoryResource;
+use App\Hydrators\V1\Category\CategoryHydrator;
 use App\Models\V1\Category;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +24,7 @@ class CategoriesController extends Controller
 {
     public function __construct(
         private readonly CategoryServiceInterface $categoryService,
+        private readonly CategoryHydrator         $hydrator
     ){}
 
     public function index(Request $request): JsonResponse
@@ -45,7 +50,7 @@ class CategoriesController extends Controller
      */
     public function store(CreateCategoryRequest $request): JsonResponse
     {
-        $dto = $request->toDTO(); //peut pas causer d'erreur en vrai
+        $dto = $this->hydrator->fromArray(array_merge($request->validated(), ['store_id' => $request->store()->id]), CreateCategoryDTO::class);
 
         try {
             $category = $this->categoryService->create($dto);
@@ -55,15 +60,12 @@ class CategoriesController extends Controller
                 'data'    => new CategoryResource($category),
             ], 201);
 
-        } catch (CategorySlugAlreadyExistsException) {
+        } catch (CategoryCreationException $e) {
             return response()->json([
-                'message' => "Une catégorie avec ce slug " . str()->slug($dto->name) . " existe déjà"
-            ], 409);
-        } catch (Throwable $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la création de la catégorie',
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -87,25 +89,30 @@ class CategoriesController extends Controller
                 'data'    => new CategoryResource($updated),
             ]);
 
-        } catch (CategorySlugAlreadyExistsException) {
+        } catch (CategoryUpdateException $e) {
             return response()->json([
-                'message' => 'Slug déjà utilisé pour une autre catégorie'
-            ], 409);
-        } catch (Throwable $e) {
-            return response()->json([
-                'message' => 'Erreur lors de la mise à jour de la catégorie',
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
     public function destroy(Category $category): JsonResponse
     {
-        $this->categoryService->delete($category);
+        try {
+            $this->categoryService->delete($category);
 
-        return response()->json([
-            'message' => 'Catégorie supprimée'
-        ]);
+            return response()->json([
+                'message' => 'Catégorie supprimée'
+            ]);
+        } catch(CategoryDeletionException $e){
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
+        }
     }
 
     public function reorder(ReorderCategoriesRequest $request): JsonResponse

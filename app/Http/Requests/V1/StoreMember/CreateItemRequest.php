@@ -10,7 +10,7 @@ use App\Rules\V1\SkuRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreItemRequest extends FormRequest
+class CreateItemRequest extends FormRequest
 {
 
     public function authorize(): bool

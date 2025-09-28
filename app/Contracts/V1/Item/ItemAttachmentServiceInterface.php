@@ -21,4 +21,10 @@ interface ItemAttachmentServiceInterface
 
     public function detachOptionList(Item $item, int $optionListId): void;
 
+    public function detachAllIngredients(Item $item): void;
+
+    public function detachAllOptions(Item $item): void;
+
+    public function detachAllOptionLists(Item $item): void;
+
 }

@@ -17,7 +17,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->string('name');
-            $table->string('slug');
+            $table->string('sku');
             $table->integer('position')->default(0);
             $table->foreignId('parent_id')
                 ->nullable()
@@ -25,7 +25,7 @@ return new class extends Migration
                 ->nullOnDelete();
             $table->boolean('is_active')->default(true);
 
-            $table->unique(['store_id', 'slug']);
+            $table->unique(['store_id', 'sku']);
 
             $table->timestamps();
         });

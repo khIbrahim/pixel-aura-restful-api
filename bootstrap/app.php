@@ -23,18 +23,19 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/options.php',
             __DIR__.'/../routes/option_lists.php',
             __DIR__.'/../routes/item_attachments.php',
+            __DIR__.'/../routes/item_variants.php',
         ],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'device.ctx'      => EnsureDeviceContext::class,
+            'device.ctx' => EnsureDeviceContext::class,
             'device.throttle' => ThrottleRequests::class,
-            'correlate'       => CorrelateRequest::class,
-            'ability'         => CheckAbility::class,
-            'store_member'    => EnsureStoreMember::class,
-            'has_media'      => HasMediaMiddleware::class,
+            'correlate' => CorrelateRequest::class,
+            'ability' => CheckAbility::class,
+            'store_member' => EnsureStoreMember::class,
+            'has_media' => HasMediaMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

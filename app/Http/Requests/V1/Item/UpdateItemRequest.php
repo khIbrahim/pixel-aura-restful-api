@@ -82,9 +82,6 @@ class UpdateItemRequest extends FormRequest
             'ingredients.*.is_allergen'         => ['sometimes', 'boolean'],
             'ingredients.*.unit'                => ['sometimes', 'string', 'max:50'],
             'ingredients.*.cost_per_unit_cents' => ['sometimes', new MoneyRule()],
-
-            'image'     => ['sometimes', new ImageRule(), 'prohibits:image_url'],
-            'image_url' => ['sometimes', new ImageUrlRule(), 'prohibits:image'],
         ];
     }
 }

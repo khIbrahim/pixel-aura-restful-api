@@ -4,23 +4,27 @@ namespace App\Hydrators\V1\Item;
 
 use App\DTO\V1\Ingredient\CreateIngredientDTO;
 use App\DTO\V1\Item\CreateItemDTO;
-use App\DTO\V1\Item\CreateVariantDTO;
+use App\DTO\V1\Item\UpdateItemDTO;
+use App\DTO\V1\ItemVariant\CreateItemVariantDTO;
 use App\DTO\V1\Option\CreateOptionDTO;
-use App\Http\Requests\V1\StoreMember\StoreItemRequest;
+use App\Http\Requests\V1\Item\UpdateItemRequest;
+use App\Http\Requests\V1\StoreMember\CreateItemRequest;
+use App\Hydrators\V1\BaseHydrator;
+use App\Models\V1\Item;
 use App\Services\V1\Item\SkuGeneratorService;
 
-readonly class ItemHydrator
+class ItemHydrator extends BaseHydrator
 {
-    public function __construct(private SkuGeneratorService $skuGeneratorService) {}
+    public function __construct(private readonly SkuGeneratorService $skuGeneratorService) {}
 
-    public function fromRequest(StoreItemRequest $request): CreateItemDTO
+    public function fromCreateRequest(CreateItemRequest $request): CreateItemDTO
     {
         $data = $request->validated();
 
-        $storeId    = $request->attributes->get('store')->id ?? $request->user()->store_id;
+        $storeId = $request->attributes->get('store')->id ?? $request->user()->store_id;
         $categoryId = $data['category_id'];
-        $name       = $data['name'];
-        $sku        = $data['sku'] ?? $this->skuGeneratorService->generateItemSku($name, $storeId);
+        $name = $data['name'];
+        $sku = $data['sku'] ?? $this->skuGeneratorService->generateItemSku($name, $storeId);
 
         $options = [];
         foreach ((array) ($data['options'] ?? []) as $option) {
@@ -35,13 +39,14 @@ readonly class ItemHydrator
 
         $variants = [];
         foreach ((array) ($data['variants'] ?? []) as $variant) {
-            $variants[] = new CreateVariantDTO(
-                id: $variant['id'] ?? null,
+            $variants[] = new CreateItemVariantDTO(
                 name: $variant['name'] ?? null,
                 description: $variant['description'] ?? null,
                 price_cents: $variant['price_cents'] ?? null,
                 sku: $variant['sku'] ?? $this->skuGeneratorService->generateVariantSku($name, $variant['name'] ?? '', $storeId, null),
                 is_active: $variant['is_active'] ?? true,
+                store_id: $storeId,
+                id: $variant['id'] ?? null
             );
         }
 
@@ -59,7 +64,7 @@ readonly class ItemHydrator
             );
         }
 
-        $data  = $request->validated();
+        $data = $request->validated();
         $image = $data['image'] ?? $data['image_url'] ?? null;
 
         return new CreateItemDTO(
@@ -87,6 +92,36 @@ readonly class ItemHydrator
             tax_id: $data['tax_id'] ?? null,
             created_by: $request->attributes->get('store_member')->id ?? $request->user()->id,
             image: $image,
+        );
+    }
+
+    public function fromUpdateRequest(UpdateItemRequest $request, Item $item): UpdateItemDTO
+    {
+        $data = $request->validated();
+        $storeId = $request->user()->store_id;
+
+        return new UpdateItemDTO(
+            id: $item->id,
+            store_id: $storeId,
+            category_id: $data['category_id'] ?? null,
+            tax_id: $data['tax_id'] ?? null,
+            name: $data['name'] ?? null,
+            sku: $data['sku'] ?? null,
+            barcode: $data['barcode'] ?? null,
+            description: $data['description'] ?? null,
+            currency: $data['currency'] ?? null,
+            base_price_cents: $data['base_price_cents'] ?? null,
+            current_cost_cents: $data['current_cost_cents'] ?? null,
+            is_active: isset($data['is_active']) ? (bool) $data['is_active'] : null,
+            track_inventory: isset($data['track_inventory']) ? (bool) $data['track_inventory'] : null,
+            stock: $data['stock'] ?? null,
+            loyalty_eligible: isset($data['loyalty_eligible']) ? (bool) $data['loyalty_eligible'] : null,
+            age_restriction: $data['age_restriction'] ?? null,
+            reorder_level: $data['reorder_level'] ?? null,
+            weight_grams: $data['weight_grams'] ?? null,
+            tags: $data['tags'] ?? null,
+            metadata: $data['metadata'] ?? null,
+            updated_by: $request->attributes->get('store_member')->id ?? $request->user()->id,
         );
     }
 }

@@ -9,107 +9,148 @@ use App\DTO\V1\Category\UpdateCategoryDTO;
 use App\Events\V1\Category\CategoryCreated;
 use App\Events\V1\Category\CategoryDeleted;
 use App\Events\V1\Category\CategoryUpdated;
-use App\Exceptions\V1\Category\CategorySlugAlreadyExistsException;
+use App\Exceptions\V1\Category\CategoryCreationException;
+use App\Exceptions\V1\Category\CategoryDeletionException;
+use App\Exceptions\V1\Category\CategoryUpdateException;
 use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Models\V1\Category;
+use App\Services\V1\Item\SkuGeneratorService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 readonly class CategoryService implements CategoryServiceInterface
 {
     public function __construct(
         private CategoryRepositoryInterface $categoryRepository,
+        private SkuGeneratorService         $skuGeneratorService
     ){}
 
     public function create(CreateCategoryDTO $data): Category
     {
         return DB::transaction(function () use ($data) {
-            $slug = str()->slug($data->name);
+            try {
+                $sku = $this->skuGeneratorService->generateSku($data->name, $data->store_id);
 
-            if ($this->categoryRepository->slugExists($slug, $data->store_id)) {
-                throw new CategorySlugAlreadyExistsException();
+                if ($this->categoryRepository->skuExists($sku, $data->store_id)) {
+                    throw CategoryCreationException::skuAlreadyExists($sku);
+                }
+
+                $position = $data->position !== null ? $data->position : $this->categoryRepository->getMaxPositionForStore($data->store_id) + 1;
+                if ($this->categoryRepository->hasPositionCollision($position, $data->store_id)) {
+                    throw CategoryCreationException::positionDuplicate($position);
+                }
+
+                if ($this->categoryRepository->find($data->parent_id) === null && $data->parent_id !== null) {
+                    throw CategoryCreationException::invalidParent($data->parent_id);
+                }
+
+                $dto = new CreateCategoryDTO(
+                    name: $data->name,
+                    description: $data->description,
+                    tags: $data->tags,
+                    position: $position,
+                    parent_id: $data->parent_id,
+                    is_active: $data->is_active,
+                    store_id: $data->store_id,
+                    sku: $sku,
+                );
+
+                /** @var Category $category */
+                $category = $this->categoryRepository->create($dto->toArray());
+                broadcast(new CategoryCreated($category))->toOthers();
+
+                return $category;
+            } catch (Throwable $e) {
+                if ($e instanceof CategoryCreationException) {
+                    throw $e;
+                }
+                throw CategoryCreationException::default($e->getMessage());
             }
-
-            $position = $this->resolveInsertionPosition($data->store_id, $data->position);
-
-            if ($data->position !== null) {
-                $this->categoryRepository->incrementPositionsFrom($position, $data->store_id);
-            }
-
-            $dto = new CreateCategoryDTO(
-                name: $data->name,
-                description: $data->description,
-                tags: $data->tags,
-                position: $position,
-                parent_id: $data->parent_id,
-                is_active: $data->is_active,
-                store_id: $data->store_id,
-                slug: $slug,
-            );
-
-            $category = $this->categoryRepository->create($dto);
-            broadcast(new CategoryCreated($category))->toOthers();
-            return $category;
         });
     }
 
     public function update(Category $category, UpdateCategoryDTO $data): Category
     {
-        return DB::transaction(function () use ($category, $data){
-            $attributes = [];
+        return DB::transaction(function () use ($category, $data) {
+            try {
+                $attributes = [];
 
-            if ($data->name !== null && $data->name !== $category->name){
-                $slug = str()->slug($data->name);
-                if ($this->categoryRepository->slugExists($slug, $category->store_id, $category->id)){
-                    throw new CategorySlugAlreadyExistsException();
+                if ($data->is_active !== null && $data->is_active !== $category->is_active) {
+                    if (! $data->is_active && $category->hasActiveItems()) {
+                        throw CategoryUpdateException::hasActiveItems();
+                    }
+
+                    $attributes['is_active'] = (bool)$data->is_active;
                 }
 
-                $attributes['name'] = $data->name;
-                $attributes['slug'] = $slug;
+                if ($data->parent_id !== null && $data->parent_id !== $category->parent_id) {
+                    if ($this->wouldCreateCycle($category, $data->parent_id)) {
+                        throw CategoryUpdateException::cannotUpdateParent();
+                    }
+                    $attributes['parent_id'] = $data->parent_id;
+                }
+
+                if ($data->name !== null && $data->name !== $category->name) {
+                    $attributes['name'] = $data->name;
+                }
+
+                if ($data->description !== null && $data->description !== $category->description) {
+                    $attributes['description'] = $data->description;
+                }
+
+                if ($data->tags !== null && $data->tags !== $category->tags) {
+                    $attributes['tags'] = $data->tags;
+                }
+
+                if ($data->position !== null && $data->position !== $category->position) {
+                    $this->repositionSingle($category, $data->position);
+                    $attributes['position'] = $data->position;
+                }
+
+                if (! empty($attributes)) {
+                    $this->categoryRepository->update($category, $attributes);
+                }
+
+                $category = $category->refresh();
+                broadcast(new CategoryUpdated($category))->toOthers();
+
+                return $category;
+            } catch (Throwable $e) {
+                if ($e instanceof CategoryUpdateException) {
+                    throw $e;
+                }
+                throw CategoryUpdateException::default($e->getMessage());
             }
-
-            if ($data->is_active !== null && $data->is_active !== $category->is_active){
-                $attributes['is_active'] = (bool) $data->is_active;
-            }
-
-            if ($data->parent_id !== null && $data->parent_id !== $category->parent_id){
-                $attributes['parent_id'] = $data->parent_id;
-            }
-
-            if($data->description !== null && $data->description !== $category->description){
-                $attributes['description'] = $data->description;
-            }
-
-            if($data->tags !== null && $data->tags !== $category->tags){
-                $attributes['tags'] = $data->tags;
-            }
-
-            if ($data->position !== null && $data->position !== $category->position){
-                $this->repositionSingle($category, $data->position);
-                $attributes['position'] = $data->position;
-            }
-
-            if (! empty($attributes)){
-                $this->categoryRepository->update($category, $attributes);
-            }
-
-            $category = $category->refresh();
-            broadcast(new CategoryUpdated($category))->toOthers();
-
-            return $category;
         });
     }
 
     public function delete(Category $category): void
     {
         DB::transaction(function () use ($category) {
-            $deletedPosition = $category->position;
-            $storeId         = $category->store_id;
+            try {
+                if ($category->hasItems()){
+                    throw CategoryDeletionException::hasItems();
+                }
 
-            $this->categoryRepository->delete($category);
-            $this->categoryRepository->shiftRangeDown($storeId, $deletedPosition + 1, PHP_INT_MAX);
+                if ($category->hasSubcategories()) {
+                    throw CategoryDeletionException::hasSubcategories();
+                }
 
-            broadcast(new CategoryDeleted($category))->toOthers();
+                $deletedPosition = $category->position;
+                $storeId         = $category->store_id;
+
+                $this->categoryRepository->delete($category);
+                $this->categoryRepository->shiftRangeDown($storeId, $deletedPosition + 1, PHP_INT_MAX);
+
+                broadcast(new CategoryDeleted($category))->toOthers();
+            } catch (Throwable $e) {
+                if ($e instanceof CategoryDeletionException) {
+                    throw $e;
+                }
+
+                throw CategoryDeletionException::default($e->getMessage());
+            }
         });
     }
 
@@ -131,7 +172,7 @@ readonly class CategoryService implements CategoryServiceInterface
 
         $positions = array_values($idPositionMap);
         if (count($positions) !== count(array_unique($positions))) {
-            throw new PositionDuplicateException('Positions dupliquées.');
+            throw PositionDuplicateException::withPositions($positions);
         }
 
         DB::transaction(function () use ($storeId, $idPositionMap) {
@@ -142,15 +183,6 @@ readonly class CategoryService implements CategoryServiceInterface
     public function list(int $storeId, array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
         return $this->categoryRepository->list($storeId, $filters, $perPage);
-    }
-
-    private function resolveInsertionPosition(int $storeId, ?int $requested): int
-    {
-        if ($requested === null) {
-            return $this->categoryRepository->getMaxPositionForStore($storeId) + 1;
-        }
-
-        return max(1, $requested);
     }
 
     private function repositionSingle(Category $category, int $newPosition): void
@@ -168,6 +200,27 @@ readonly class CategoryService implements CategoryServiceInterface
         } else {
             $this->categoryRepository->shiftRangeDown($storeId, $oldPosition + 1, $newPosition);
         }
+    }
+
+    private function wouldCreateCycle(Category $category, ?int $newParentId): bool
+    {
+        if ($newParentId === null) {
+            return false;
+        }
+
+        if ($category->id === $newParentId) {
+            return true;
+        }
+
+        $parent = $this->categoryRepository->find($newParentId);
+        while ($parent !== null) {
+            if ($parent->id === $category->id) {
+                return true;
+            }
+            $parent = $parent->parent;
+        }
+
+        return false;
     }
 
 }

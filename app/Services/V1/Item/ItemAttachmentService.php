@@ -71,4 +71,19 @@ readonly class ItemAttachmentService implements ItemAttachmentServiceInterface
         Cache::tags(['items'])->flush();
         Cache::forget('items.store.' . $storeId);
     }
+
+    public function detachAllIngredients(Item $item): void
+    {
+        $item->ingredients()->detach();
+    }
+
+    public function detachAllOptions(Item $item): void
+    {
+        $item->options()->detach();
+    }
+
+    public function detachAllOptionLists(Item $item): void
+    {
+        $item->optionLists()->detach();
+    }
 }

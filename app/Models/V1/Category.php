@@ -17,7 +17,7 @@ use Spatie\MediaLibrary\HasMedia;
  * @property string        $name
  * @property string|null   $description
  * @property array|null    $tags
- * @property string        $slug
+ * @property string        $sku
  * @property int           $position
  * @property null|int      $parent_id
  * @property boolean       $is_active
@@ -34,7 +34,7 @@ class Category extends Model implements HasMedia, DefinesMediaPath
     protected $fillable = [
         'store_id',
         'name',
-        'slug',
+        'sku',
         'description',
         'tags',
         'position',
@@ -57,6 +57,11 @@ class Category extends Model implements HasMedia, DefinesMediaPath
         return $this->hasMany(Category::class, 'parent_id')->orderBy('position');
     }
 
+    public function hasSubcategories(): bool
+    {
+        return $this->children()->exists();
+    }
+
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
@@ -67,13 +72,23 @@ class Category extends Model implements HasMedia, DefinesMediaPath
         return $this->hasMany(Item::class);
     }
 
+    public function hasItems(): bool
+    {
+        return $this->items()->exists();
+    }
+
+    public function hasActiveItems(): bool
+    {
+        return $this->items()->where('is_active', true)->exists();
+    }
+
     public function getMediaBasePath(): string
     {
         return FileSystem::joinPaths(
             'stores',
             $this->store_id,
             'categories',
-            $this->id . '-' . $this->slug
+            $this->id . '-' . $this->sku
         ) . '/';
     }
 

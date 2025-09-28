@@ -13,13 +13,13 @@ class ItemVariantResource extends JsonResource
     public function toArray($request): array
     {
         return [
-            'id'          => $this->id,
-            'item_id'     => $this->item_id,
-            'name'        => $this->name,
-            'sku'         => $this->sku,
+            'id' => $this->id,
+            'item_id' => $this->item_id,
+            'name' => $this->name,
+            'description' => $this->description,
+            'sku' => $this->sku,
             'price_cents' => $this->price_cents,
-            'is_active'   => $this->is_active,
+            'is_active' => $this->is_active,
         ];
     }
-
 }

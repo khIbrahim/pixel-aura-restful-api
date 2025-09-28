@@ -3,21 +3,16 @@
 namespace App\Repositories\V1\Category;
 
 use App\Contracts\V1\Category\CategoryRepositoryInterface;
-use App\DTO\V1\Category\CreateCategoryDTO;
 use App\Models\V1\Category;
+use App\Repositories\V1\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 
-class CategoryRepository implements CategoryRepositoryInterface
+class CategoryRepository extends BaseRepository implements CategoryRepositoryInterface
 {
 
     private const int CACHE_TTL = 600;
-
-    public function create(CreateCategoryDTO $data): Category
-    {
-        return Category::query()->create($data->toArray());
-    }
 
     public function getMaxPositionForStore(int $storeId): int
     {
@@ -47,40 +42,22 @@ class CategoryRepository implements CategoryRepositoryInterface
         Cache::forget($cacheKey);
     }
 
-    public function slugExists(string $slug, int $storeId, ?int $ignoreId = null): bool
+    public function skuExists(string $sku, int $storeId, ?int $ignoreId = null): bool
     {
-        return Category::query()
+        return $this->query()
             ->where('store_id', $storeId)
-            ->where('slug', $slug)
+            ->where('sku', $sku)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
             ->exists();
     }
 
-    public function findBySlug(string $slug, int $storeId): ?Category
+    public function findBySku(string $sku, int $storeId): ?Category
     {
-        $cacheKey = "store:$storeId:category:slug:$slug";
+        $cacheKey = "store:$storeId:category:sku:$sku";
 
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($slug, $storeId) {
-            return Category::query()->where('slug', $slug)->where('store_id', $storeId)->first();
+        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($sku, $storeId) {
+            return Category::query()->where('sku', $sku)->where('store_id', $storeId)->first();
         });
-    }
-
-    public function findById(int $id): ?Category
-    {
-        $cacheKey = "category:id:$id";
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($id) {
-            return Category::query()->find($id);
-        });
-    }
-
-    public function update(Category $category, array $attributes): Category
-    {
-        $category->fill($attributes);
-        $category->save();
-
-        $this->invalidateCache($category);
-
-        return $category;
     }
 
     public function shiftRangeUp(int $storeId, int $fromInclusive, int $toInclusive): void
@@ -137,13 +114,6 @@ class CategoryRepository implements CategoryRepositoryInterface
         Cache::forget($cacheKey);
     }
 
-    public function delete(Category $category): void
-    {
-        $category->delete();
-
-        $this->invalidateCache($category);
-    }
-
     public function list(int $storeId, array $filters = [], int $perPage = 25): LengthAwarePaginator
     {
         $query = Category::query()->where('store_id', $storeId)->orderBy('position');
@@ -152,7 +122,7 @@ class CategoryRepository implements CategoryRepositoryInterface
             $s = (string) $filters['search'];
             $query->where(function ($q) use ($s) {
                 $q->where('name', 'like', "%$s%")
-                  ->orWhere('slug', 'like', "%$s%")
+                  ->orWhere('sku', 'like', "%$s%")
                   ->orWhereJsonContains('tags', $s);
             });
         }
@@ -174,16 +144,8 @@ class CategoryRepository implements CategoryRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    public function invalidateCache(Category $category): void
+    public function model(): string
     {
-        $keys = [
-            "category:id:$category->id",
-            "store:$category->store_id:category:slug:$category->slug",
-            "store:$category->store_id:category:max_position",
-        ];
-        foreach ($keys as $key) {
-            Cache::forget($key);
-        }
+        return Category::class;
     }
-
 }

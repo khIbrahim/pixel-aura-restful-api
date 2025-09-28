@@ -1,18 +1,19 @@
 <?php
 
-namespace App\DTO\V1\Item;
+namespace App\DTO\V1\ItemVariant;
 
-use Illuminate\Contracts\Support\Arrayable;
+use App\DTO\V1\Abstract\BaseDTO;
 
-final readonly class CreateVariantDTO implements Arrayable
+final readonly class CreateItemVariantDTO extends BaseDTO
 {
     public function __construct(
-        public ?int    $id = null,
-        public ?string $name = null,
+        public ?string $name        = null,
         public ?string $description = null,
         public ?int    $price_cents = null,
-        public ?string $sku = null,
-        public bool    $is_active = true,
+        public ?string $sku         = null,
+        public bool    $is_active   = true,
+        public int     $store_id,
+        public ?int    $id          = null,
     ) {}
 
     public function toArray(): array
@@ -24,6 +25,7 @@ final readonly class CreateVariantDTO implements Arrayable
             'price_cents' => $this->price_cents,
             'sku'         => $this->sku,
             'is_active'   => $this->is_active,
+            'store_id'    => $this->store_id
         ];
     }
 }

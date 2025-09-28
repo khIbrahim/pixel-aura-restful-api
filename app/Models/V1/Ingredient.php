@@ -65,6 +65,11 @@ class Ingredient extends Model implements HasMedia, DefinesMediaPath
             ->withTimestamps();
     }
 
+    public function hasActiveItems(): bool
+    {
+        return $this->items()->where('is_active', true)->exists();
+    }
+
     /**
      * Format cost per unit for display.
      */

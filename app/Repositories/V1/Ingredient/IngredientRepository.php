@@ -4,34 +4,26 @@ namespace App\Repositories\V1\Ingredient;
 
 use App\Contracts\V1\Ingredient\IngredientRepositoryInterface;
 use App\DTO\V1\Ingredient\CreateIngredientDTO;
-use App\DTO\V1\Ingredient\UpdateIngredientDTO;
 use App\Models\V1\Ingredient;
+use App\Repositories\V1\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
-class IngredientRepository implements IngredientRepositoryInterface
+class IngredientRepository extends BaseRepository implements IngredientRepositoryInterface
 {
 
     public function findOrCreateIngredient(CreateIngredientDTO $data): Ingredient
     {
         if ($data->id !== null) {
-            $existingIngredient = $this->findIngredient($data->id);
+            /** @var null|Ingredient $existingIngredient */
+            $existingIngredient = $this->find($data->id);
             if ($existingIngredient) {
                 return $existingIngredient;
             }
         }
 
-        return $this->createIngredient($data);
-    }
-
-    public function findIngredient(int $id): ?Ingredient
-    {
-        return Ingredient::query()->find($id);
-    }
-
-    public function createIngredient(CreateIngredientDTO $data): Ingredient
-    {
-        return Ingredient::query()->create($data->toArray());
+        /** @var Ingredient */
+        return $this->create($data->toArray());
     }
 
     public function list(array $filters = [], int $perPage = 25): LengthAwarePaginator
@@ -63,22 +55,16 @@ class IngredientRepository implements IngredientRepositoryInterface
         return $query->paginate($perPage);
     }
 
-    public function update(Ingredient $ingredient, UpdateIngredientDTO $data): Ingredient
-    {
-        $ingredient->update(array_filter($data->toArray(), fn($value) => $value !== null));
-        return $ingredient->fresh();
-    }
-
-    public function delete(Ingredient $ingredient): bool
-    {
-        return $ingredient->delete();
-    }
-
     public function findIngredientsByIds(array $ids): Collection
     {
         return Ingredient::query()
             ->whereIn('id', $ids)
             ->get()
             ->keyBy('id');
+    }
+
+    public function model(): string
+    {
+        return Ingredient::class;
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Requests\V1\Ingredient;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreIngredientRequest extends FormRequest
+class CreateIngredientRequest extends FormRequest
 {
 
     public function authorize(): bool

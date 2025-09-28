@@ -151,6 +151,30 @@ paths:
                 $ref: '#/components/schemas/ValidationError'
       x-abilities:
         - items:update
+    delete:
+      summary: Supprimer un article
+      tags: [Items]
+      responses:
+        '200':
+          description: Article supprimé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Item supprimé avec succès"
+        '404':
+          description: Article non trouvé
+        '422':
+          description: Impossible de supprimer (contraintes métier)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+      x-abilities:
+        - items:delete
 
 components:
   schemas:
@@ -158,128 +182,303 @@ components:
       type: object
       required:
         - name
-        - description
         - category_id
-        - price
+        - base_price_cents
       properties:
         name:
           type: string
+          maxLength: 255
           example: "Cheeseburger Deluxe"
-        description:
-          type: string
-          example: "Notre burger signature avec du fromage fondu"
         category_id:
           type: integer
           example: 1
-        price:
-          type: number
-          format: float
-          example: 9.99
+        tax_id:
+          type: integer
+          example: 1
+        sku:
+          type: string
+          maxLength: 100
+          example: "CHEESE-001"
+        barcode:
+          type: string
+          maxLength: 255
+          example: "1234567890123"
+        description:
+          type: string
+          example: "Notre burger signature avec du fromage fondu"
+        currency:
+          type: string
+          example: "EUR"
+        base_price_cents:
+          type: integer
+          minimum: 0
+          example: 999
+        current_cost_cents:
+          type: integer
+          minimum: 0
+          example: 450
         is_active:
           type: boolean
           default: true
+        track_inventory:
+          type: boolean
+          default: false
+        stock:
+          type: integer
+          minimum: 0
+          example: 50
+        loyalty_eligible:
+          type: boolean
+          default: false
+        age_restriction:
+          type: integer
+          minimum: 0
+          example: 18
+        reorder_level:
+          type: integer
+          minimum: 0
+          example: 10
+        weight_grams:
+          type: integer
+          minimum: 0
+          example: 250
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+          example: ["populaire", "nouveau"]
+        metadata:
+          type: object
+          example: {"allergens": ["gluten", "dairy"]}
         options:
           type: array
           items:
-            type: integer
-          example: [1, 2, 3]
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+                maxLength: 255
+              price_cents:
+                type: integer
+                minimum: 0
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                maxLength: 255
+              sku:
+                type: string
+                maxLength: 100
+              price_cents:
+                type: integer
+                minimum: 0
+              is_active:
+                type: boolean
+                default: true
         ingredients:
           type: array
           items:
-            type: integer
-          example: [1, 2, 3]
-        option_lists:
-          type: array
-          items:
-            type: integer
-          example: [1, 2]
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+                maxLength: 255
+              is_mandatory:
+                type: boolean
+              is_allergen:
+                type: boolean
+              unit:
+                type: string
+                maxLength: 50
+              cost_per_unit_cents:
+                type: integer
+                minimum: 0
+        image:
+          type: string
+          format: byte
+          description: Image de l'article en base64
+        image_url:
+          type: string
+          format: uri
+          description: URL de l'image
 
     ItemUpdateRequest:
       type: object
       properties:
         name:
           type: string
-          example: "Cheeseburger Deluxe"
-        description:
-          type: string
-          example: "Notre burger signature avec du fromage fondu"
+          maxLength: 255
         category_id:
           type: integer
-          example: 1
-        price:
-          type: number
-          format: float
-          example: 9.99
+        tax_id:
+          type: integer
+        sku:
+          type: string
+          maxLength: 100
+        barcode:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        currency:
+          type: string
+        base_price_cents:
+          type: integer
+          minimum: 0
+        current_cost_cents:
+          type: integer
+          minimum: 0
         is_active:
           type: boolean
-          example: true
-        options:
+        track_inventory:
+          type: boolean
+        stock:
+          type: integer
+          minimum: 0
+        loyalty_eligible:
+          type: boolean
+        age_restriction:
+          type: integer
+          minimum: 0
+        reorder_level:
+          type: integer
+          minimum: 0
+        weight_grams:
+          type: integer
+          minimum: 0
+        tags:
           type: array
           items:
-            type: integer
-          example: [1, 2, 3]
-        ingredients:
-          type: array
-          items:
-            type: integer
-          example: [1, 2, 3]
-        option_lists:
-          type: array
-          items:
-            type: integer
-          example: [1, 2]
+            type: string
+            maxLength: 50
+        metadata:
+          type: object
+        image:
+          type: string
+          format: byte
+          description: Image de l'article en base64
+        image_url:
+          type: string
+          format: uri
+          description: URL de l'image
 
-    ItemResponse:
+    Item:
       type: object
       properties:
         id:
           type: integer
           example: 1
-        name:
-          type: string
-          example: "Cheeseburger Deluxe"
-        description:
-          type: string
-          example: "Notre burger signature avec du fromage fondu"
-        price:
-          type: number
-          format: float
-          example: 9.99
-        is_active:
-          type: boolean
-          example: true
+        store_id:
+          type: integer
+          example: 1
         category_id:
           type: integer
           example: 1
-        category:
-          $ref: '#/components/schemas/CategorySimple'
-        ingredients:
-          type: array
-          items:
-            $ref: '#/components/schemas/IngredientSimple'
-        options:
-          type: array
-          items:
-            $ref: '#/components/schemas/OptionSimple'
-        option_lists:
-          type: array
-          items:
-            $ref: '#/components/schemas/OptionListSimple'
-        created_at:
+        tax_id:
+          type: integer
+          example: 1
+        name:
           type: string
-          format: date-time
-        updated_at:
+          example: "Cheeseburger Deluxe"
+        sku:
           type: string
-          format: date-time
-        main_image:
+          example: "CHEESE-001"
+        barcode:
           type: string
-          format: url
-          nullable: true
-        gallery:
+          example: "1234567890123"
+        description:
+          type: string
+          example: "Notre burger signature avec du fromage fondu"
+        currency:
+          type: string
+          example: "EUR"
+        base_price_cents:
+          type: integer
+          example: 999
+        current_cost_cents:
+          type: integer
+          example: 450
+        is_active:
+          type: boolean
+          example: true
+        track_inventory:
+          type: boolean
+          example: false
+        stock:
+          type: integer
+          example: 50
+        loyalty_eligible:
+          type: boolean
+          example: false
+        age_restriction:
+          type: integer
+          example: 18
+        reorder_level:
+          type: integer
+          example: 10
+        weight_grams:
+          type: integer
+          example: 250
+        tags:
           type: array
           items:
             type: string
-            format: url
+          example: ["populaire", "nouveau"]
+        metadata:
+          type: object
+          example: {"allergens": ["gluten", "dairy"]}
+        created_by:
+          type: integer
+          example: 1
+        updated_by:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        category:
+          $ref: '#/components/schemas/Category'
+        tax:
+          $ref: '#/components/schemas/Tax'
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemVariant'
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+
+    ItemResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Item créé avec succès"
+        data:
+          $ref: '#/components/schemas/Item'
 
     ItemPaginatedResponse:
       type: object
@@ -287,7 +486,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/ItemResponse'
+            $ref: '#/components/schemas/Item'
         meta:
           type: object
           properties:
@@ -304,58 +503,71 @@ components:
               type: integer
               example: 4
 
-    CategorySimple:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: "Burgers"
-
-    IngredientSimple:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: "Steak haché"
-
-    OptionSimple:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: "Sauce piquante"
-
-    OptionListSimple:
-      type: object
-      properties:
-        id:
-          type: integer
-          example: 1
-        name:
-          type: string
-          example: "Cuissons"
-
     ValidationError:
       type: object
       properties:
         message:
           type: string
-          example: "Les données fournies ne sont pas valides."
+          example: "The given data was invalid."
         errors:
           type: object
           additionalProperties:
             type: array
             items:
               type: string
-          example:
-            name: ["Le champ nom est obligatoire."]
-            price: ["Le prix doit être supérieur à 0."]
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+
+    Tax:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        rate:
+          type: number
+
+    ItemVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price_cents:
+          type: integer
+        sku:
+          type: string
+        is_active:
+          type: boolean
+
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        is_allergen:
+          type: boolean
+        is_mandatory:
+          type: boolean
+
+    Option:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        price_cents:
+          type: integer
