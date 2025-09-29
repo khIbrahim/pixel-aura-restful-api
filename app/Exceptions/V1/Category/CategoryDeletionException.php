@@ -7,7 +7,7 @@ use App\Exceptions\V1\BaseApiException;
 class CategoryDeletionException extends BaseApiException
 {
     protected int $statusCode   = 422;
-    protected string $errorType = 'category_deletion_failed';
+    protected string $errorType = 'CATEGORY_DELETION_ERROR';
 
     public static function hasItems(): self
     {

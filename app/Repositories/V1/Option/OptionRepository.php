@@ -15,23 +15,15 @@ class OptionRepository extends BaseRepository implements OptionRepositoryInterfa
     public function findOrCreateOption(CreateOptionDTO $data): Option
     {
         if ($data->id !== null) {
-            $existingOption = $this->findOption($data->id);
+            /** @var null|Option $existingOption */
+            $existingOption = $this->find($data->id);
             if ($existingOption) {
                 return $existingOption;
             }
         }
 
-        return $this->createOption($data);
-    }
-
-    public function findOption(int $id): ?Option
-    {
-        return Option::query()->find($id);
-    }
-
-    public function createOption(CreateOptionDTO $data): Option
-    {
-        return Option::query()->create($data->toArray());
+        /** @var Option */
+        return $this->create($data->toArray());
     }
 
     public function list(array $filters, int $perPage = 25): LengthAwarePaginator

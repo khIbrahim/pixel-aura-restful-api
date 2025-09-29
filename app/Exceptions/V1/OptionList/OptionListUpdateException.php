@@ -6,8 +6,8 @@ use App\Exceptions\V1\BaseApiException;
 
 class OptionListUpdateException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'option_list_update_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'OPTION_LIST_UPDATE_ERROR';
 
     public static function nameAlreadyExists(string $name): self
     {

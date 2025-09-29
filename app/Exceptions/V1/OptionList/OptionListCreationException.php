@@ -3,11 +3,12 @@
 namespace App\Exceptions\V1\OptionList;
 
 use App\Exceptions\V1\BaseApiException;
+use Throwable;
 
 class OptionListCreationException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'option_list_creation_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'OPTION_LIST_CREATION_ERROR';
 
     public static function nameAlreadyExists(string $name): self
     {
@@ -21,14 +22,11 @@ class OptionListCreationException extends BaseApiException
             ->addContext('max_selections', $max);
     }
 
-    public static function emptyOptionsList(): self
+    public static function default(?Throwable $e): self
     {
-        return new self("Impossible de créer une liste d'options vide");
-    }
-
-    public static function default(?string $reason = null): self
-    {
-        $message = $reason ? "Erreur lors de la création de la liste d'options: $reason" : "Erreur lors de la création de la liste d'options";
-        return new self($message);
+        return new self(
+            "Une erreur est survenue lors de la création de la liste d'options",
+            previous: $e
+        );
     }
 }

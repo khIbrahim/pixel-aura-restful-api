@@ -3,11 +3,12 @@
 namespace App\Exceptions\V1\StoreMember;
 
 use App\Exceptions\V1\BaseApiException;
+use Throwable;
 
 class StoreMemberDeletionException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'store_member_deletion_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'STORE_MEMBER_DELETION_ERROR';
 
     public static function cannotDeleteOwner(): self
     {
@@ -28,9 +29,11 @@ class StoreMemberDeletionException extends BaseApiException
         return new self("Impossible de supprimer un membre ayant des commandes actives");
     }
 
-    public static function default(?string $reason = null): self
+    public static function default(?Throwable $e): self
     {
-        $message = $reason ? "Erreur lors de la suppression du membre: $reason" : "Erreur lors de la suppression du membre";
-        return new self($message);
+        return new self(
+            "Une erreur est survenue lors de la suppression du membre du magasin",
+            previous: $e
+        );
     }
 }

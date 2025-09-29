@@ -7,7 +7,7 @@ use App\Exceptions\V1\BaseApiException;
 class IngredientUpdateException extends BaseApiException
 {
     protected int $statusCode = 422;
-    protected string $errorType = 'ingredient_update_failed';
+    protected string $errorType = 'INGREDIENT_UPDATE_ERROR';
 
     public static function nameAlreadyExists(string $name): self
     {

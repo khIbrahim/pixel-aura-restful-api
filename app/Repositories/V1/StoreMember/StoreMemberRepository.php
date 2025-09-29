@@ -73,4 +73,12 @@ class StoreMemberRepository extends BaseRepository implements StoreMemberReposit
             return $code;
         });
     }
+
+    public function codeExists(int $storeId, int $code): bool
+    {
+        return $this->query()
+            ->where('store_id', $storeId)
+            ->where('code_number', $code)
+            ->exists();
+    }
 }

@@ -7,7 +7,7 @@ use App\Exceptions\V1\BaseApiException;
 class CategoryNotFoundException extends BaseApiException
 {
     protected int $statusCode   = 404;
-    protected string $errorType = 'category_not_found';
+    protected string $errorType = 'CATEGORY_NOT_FOUND';
 
     public static function withId(int $id): self
     {

@@ -6,8 +6,8 @@ use App\Exceptions\V1\BaseApiException;
 
 class IngredientNotFoundException extends BaseApiException
 {
-    protected int $statusCode = 404;
-    protected string $errorType = 'ingredient_not_found';
+    protected int $statusCode   = 404;
+    protected string $errorType = 'INGREDIENT_NOT_FOUND';
 
     public static function withId(int $id): self
     {

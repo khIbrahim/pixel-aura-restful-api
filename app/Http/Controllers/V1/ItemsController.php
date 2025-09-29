@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\V1;
 
 use App\Contracts\V1\Item\ItemServiceInterface;
+use App\Exceptions\V1\Item\ItemCreationException;
+use App\Exceptions\V1\Item\ItemDeletionException;
+use App\Exceptions\V1\Item\ItemUpdateException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Item\UpdateItemRequest;
 use App\Http\Requests\V1\StoreMember\CreateItemRequest;
@@ -11,7 +14,6 @@ use App\Hydrators\V1\Item\ItemHydrator;
 use App\Models\V1\Item;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Throwable;
 
 class ItemsController extends Controller
 {
@@ -35,11 +37,12 @@ class ItemsController extends Controller
                 'message' => 'Item créé avec succès',
                 'data' => new ItemResource($item),
             ]);
-        } catch (Throwable $e) {
+        } catch (ItemCreationException $e) {
             return response()->json([
-                'message' => "Erreur lors de la création de l'item",
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -67,11 +70,12 @@ class ItemsController extends Controller
                 'message' => 'Item mis à jour avec succès',
                 'data' => new ItemResource($updatedItem),
             ]);
-        } catch (Throwable $e) {
+        } catch (ItemUpdateException $e) {
             return response()->json([
-                'message' => "Erreur lors de la mise à jour de l'item",
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -81,22 +85,17 @@ class ItemsController extends Controller
     public function destroy(Item $item): JsonResponse
     {
         try {
-            $deleted = $this->itemService->delete($item);
-
-            if ($deleted) {
-                return response()->json([
-                    'message' => 'Item supprimé avec succès',
-                ]);
-            }
+            $this->itemService->delete($item);
 
             return response()->json([
-                'message' => "Erreur lors de la suppression de l'item",
-            ], 500);
-        } catch (Throwable $e) {
+                'message' => 'Item supprimé avec succès',
+            ]);
+        } catch (ItemDeletionException $e) {
             return response()->json([
-                'message' => "Erreur lors de la suppression de l'item",
-                'error' => $e->getMessage(),
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 

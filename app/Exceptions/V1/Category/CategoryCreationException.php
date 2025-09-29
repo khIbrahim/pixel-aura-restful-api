@@ -3,11 +3,12 @@
 namespace App\Exceptions\V1\Category;
 
 use App\Exceptions\V1\BaseApiException;
+use Throwable;
 
 class CategoryCreationException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'category_creation_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'CATEGORY_CREATION_ERROR';
 
     public static function skuAlreadyExists(string $sku): self
     {
@@ -25,9 +26,11 @@ class CategoryCreationException extends BaseApiException
             ->addContext('parent_id', $parentId);
     }
 
-    public static function default(?string $reason = null): self
+    public static function default(?Throwable $e): self
     {
-        $message = $reason ? "Erreur lors de la création de la catégorie: $reason" : "Erreur lors de la création de la catégorie";
-        return new self($message);
+        return new self(
+            "Erreur lors de la création de la catégorie.",
+            previous: $e
+        );
     }
 }

@@ -6,8 +6,9 @@ use App\Exceptions\V1\BaseApiException;
 
 class UnknownAbilityException extends BaseApiException
 {
-    protected $code    = 400;
-    protected $message = 'The specified ability is unknown.';
+    protected $code             = 400;
+    protected $message          = 'The specified ability is unknown.';
+    protected string $errorType = "UNKNOWN_ABILITY";
 
     public static function fromName(string $abilityName): self
     {

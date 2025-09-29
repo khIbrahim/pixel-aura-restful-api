@@ -3,29 +3,18 @@
 namespace App\Exceptions\V1\StoreMember;
 
 use App\Exceptions\V1\BaseApiException;
+use Throwable;
 
 class StoreMemberUpdateException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'store_member_update_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'STORE_MEMBER_UPDATE_ERROR';
 
-    public static function cannotUpdateOwner(): self
+    public static function default(?Throwable $e): self
     {
-        return new self("Impossible de modifier le propriétaire du magasin")
-            ->setStatusCode(403)
-            ->setErrorType('forbidden');
-    }
-
-    public static function cannotChangeRole(): self
-    {
-        return new self("Impossible de modifier le rôle de ce membre")
-            ->setStatusCode(403)
-            ->setErrorType('forbidden');
-    }
-
-    public static function default(?string $reason = null): self
-    {
-        $message = $reason ? "Erreur lors de la mise à jour du membre: {$reason}" : "Erreur lors de la mise à jour du membre";
-        return new self($message);
+        return new self(
+            "Une erreur est survenue lors de la mise à jour du membre du magasin",
+            previous: $e
+        );
     }
 }

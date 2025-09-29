@@ -65,7 +65,8 @@ readonly class CategoryService implements CategoryServiceInterface
                 if ($e instanceof CategoryCreationException) {
                     throw $e;
                 }
-                throw CategoryCreationException::default($e->getMessage());
+
+                throw CategoryCreationException::default($e);
             }
         });
     }

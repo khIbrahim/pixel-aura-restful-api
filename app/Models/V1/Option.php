@@ -55,9 +55,19 @@ class Option extends Model implements HasMedia, DefinesMediaPath
             ->withTimestamps();
     }
 
+    public function hasActiveItems(): bool
+    {
+        return $this->items()->wherePivot('is_active', true)->exists();
+    }
+
     public function list(): BelongsTo
     {
         return $this->belongsTo(OptionList::class, 'option_list_id');
+    }
+
+    public function isInActiveOptionList(): bool
+    {
+        return $this->list()->where('is_active', false)->exists();
     }
 
     public function getMediaBasePath(): string

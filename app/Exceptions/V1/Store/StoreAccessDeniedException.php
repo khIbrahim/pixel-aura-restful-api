@@ -6,8 +6,8 @@ use App\Exceptions\V1\BaseApiException;
 
 class StoreAccessDeniedException extends BaseApiException
 {
-    protected int $statusCode = 403;
-    protected string $errorType = 'store_access_denied';
+    protected int $statusCode   = 403;
+    protected string $errorType = 'STORE_ACCESS_DENIED';
 
     public static function forUser(int $userId, int $storeId): self
     {

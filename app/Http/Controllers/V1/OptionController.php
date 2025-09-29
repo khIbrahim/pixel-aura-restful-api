@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\V1;
 
 use App\Contracts\V1\Option\OptionServiceInterface;
+use App\Exceptions\V1\Option\OptionCreationException;
+use App\Exceptions\V1\Option\OptionDeletionException;
+use App\Exceptions\V1\Option\OptionUpdateException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\Option\CreateOptionRequest;
 use App\Http\Requests\V1\Option\UpdateOptionRequest;
@@ -11,7 +14,6 @@ use App\Hydrators\V1\Option\OptionHydrator;
 use App\Models\V1\Option;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Throwable;
 
 class OptionController extends Controller
 {
@@ -50,11 +52,12 @@ class OptionController extends Controller
                 'message' => "Option créé avec succès.",
                 'data'    => new OptionResource($option)
             ], 201);
-        } catch (Throwable $e) {
+        } catch (OptionCreationException $e) {
             return response()->json([
-                'message' => "Une erreur est survenue lors de la création de l'option.",
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -74,11 +77,12 @@ class OptionController extends Controller
                 'message' => "Option mise à jour avec succès.",
                 'data'    => new OptionResource($option)
             ]);
-        } catch (Throwable $e) {
+        } catch (OptionUpdateException $e) {
             return response()->json([
-                'message' => "Une erreur est survenue lors de la mise à jour de l'option.",
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -90,11 +94,12 @@ class OptionController extends Controller
             return response()->json([
                 'message' => "Option supprimée avec succès."
             ]);
-        } catch (Throwable $e) {
+        } catch (OptionDeletionException $e) {
             return response()->json([
-                'message' => "Une erreur est survenue lors de la suppression de l'option.",
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 

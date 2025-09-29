@@ -3,15 +3,16 @@
 namespace App\Exceptions\V1\StoreMember;
 
 use App\Exceptions\V1\BaseApiException;
+use Throwable;
 
 class StoreMemberCreationException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'store_member_creation_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'STORE_MEMBER_CREATION_ERROR';
 
     public static function codeAlreadyExists(string $code): self
     {
-        return new self("Le code membre '{$code}' existe déjà")
+        return new self("Le code membre '$code' existe déjà")
             ->addContext('code', $code);
     }
 
@@ -22,15 +23,8 @@ class StoreMemberCreationException extends BaseApiException
             ->setErrorType('forbidden');
     }
 
-    public static function invalidRole(string $role): self
+    public static function default(?Throwable $e): self
     {
-        return new self("Le rôle '{$role}' n'est pas valide")
-            ->addContext('role', $role);
-    }
-
-    public static function default(string $reason = null): self
-    {
-        $message = $reason ? "Erreur lors de la création du membre: {$reason}" : "Erreur lors de la création du membre";
-        return new self($message);
+        return new self("Une erreur est survenue lors de la création du membre", previous: $e);
     }
 }

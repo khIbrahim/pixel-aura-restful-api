@@ -7,7 +7,7 @@ use App\Exceptions\V1\BaseApiException;
 class CategoryUpdateException extends BaseApiException
 {
     protected int $statusCode = 422;
-    protected string $errorType = 'category_update_failed';
+    protected string $errorType = 'CATEGORY_UPDATE_ERROR';
 
     public static function cannotUpdateParent(): self
     {

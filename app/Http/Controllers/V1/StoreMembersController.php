@@ -8,6 +8,9 @@ use App\DTO\V1\StoreMember\CreateStoreMemberDTO;
 use App\DTO\V1\StoreMember\ExportStoreMembersDTO;
 use App\DTO\V1\StoreMember\ImportStoreMemberDTO;
 use App\DTO\V1\StoreMember\UpdateStoreMemberDTO;
+use App\Exceptions\V1\StoreMember\StoreMemberCreationException;
+use App\Exceptions\V1\StoreMember\StoreMemberDeletionException;
+use App\Exceptions\V1\StoreMember\StoreMemberUpdateException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\V1\StoreMember\ExportStoreMembersRequest;
 use App\Http\Requests\V1\StoreMember\ImportStoreMemberRequest;
@@ -22,7 +25,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Throwable;
 
 class StoreMembersController extends Controller
 {
@@ -58,29 +60,17 @@ class StoreMembersController extends Controller
             $data        = CreateStoreMemberDTO::fromRequest($store, $request->validated());
             $storeMember = $this->storeMemberService->create($data);
 
-            Log::info("Store member créé", [
-                'store_member_id' => $storeMember->id,
-                'store_id'        => $store->id,
-                'name'            => $storeMember->name,
-                'role'            => $storeMember->role,
-            ]);
-
             return response()->json([
                 'message' => 'Store member créé avec succès',
                 'data'    => new StoreMemberResource($storeMember),
             ], 201);
         }
-        catch (Throwable $e) {
-            Log::error("Erreur lors de la création du store member", [
-                'store_id' => $store->id,
-                'error'    => $e->getMessage(),
-                'trace'    => $e->getTraceAsString(),
-            ]);
-
+        catch (StoreMemberCreationException $e) {
             return response()->json([
-                'message' => 'Erreur lors de la création du store member',
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -102,29 +92,16 @@ class StoreMembersController extends Controller
             $data          = UpdateStoreMemberDTO::fromRequest($request->validated());
             $updatedMember = $this->storeMemberService->update($storeMember, $data);
 
-            Log::info("Store member mis à jour", [
-                'store_member_id' => $updatedMember->id,
-                'store_id'        => $updatedMember->store_id,
-                'name'            => $updatedMember->name,
-                'role'            => $updatedMember->role,
-            ]);
-
             return response()->json([
                 'message' => 'Store member mis à jour avec succès',
                 'data'    => new StoreMemberResource($updatedMember),
             ]);
-        } catch (Throwable $e) {
-            Log::error("Erreur lors de la mise à jour du store member", [
-                'store_member_id' => $storeMember->id,
-                'store_id'        => $storeMember->store_id,
-                'error'           => $e->getMessage(),
-                'trace'           => $e->getTraceAsString(),
-            ]);
-
+        } catch (StoreMemberUpdateException $e) {
             return response()->json([
-                'message' => 'Erreur lors de la mise à jour du store member',
-                'error'   => $e->getMessage()
-            ], 500);
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 
@@ -133,25 +110,18 @@ class StoreMembersController extends Controller
      */
     public function destroy(StoreMember $storeMember): Response|JsonResponse
     {
-        $deleted = $this->storeMemberService->delete($storeMember);
-
-        if ($deleted) {
-            Log::info("Store member supprimé", [
-                'store_member_id' => $storeMember->id,
-                'store_id'        => $storeMember->store_id,
-                'name'            => $storeMember->name,
-            ]);
-
-            return response()->noContent();
-        } else {
-            Log::error("Erreur lors de la suppression du store member", [
-                'store_member_id' => $storeMember->id,
-                'store_id'        => $storeMember->store_id,
-            ]);
+        try {
+            $this->storeMemberService->delete($storeMember);
 
             return response()->json([
-                'message' => 'Erreur lors de la suppression du store member',
-            ], 500);
+                'message' => 'Store member supprimé avec succès',
+            ]);
+        } catch(StoreMemberDeletionException $e){
+            return response()->json([
+                'message' => $e->getMessage(),
+                'error'   => $e->getErrorType(),
+                'context' => $e->getContext()
+            ], $e->getStatusCode());
         }
     }
 

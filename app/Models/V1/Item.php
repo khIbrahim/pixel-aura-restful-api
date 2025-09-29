@@ -152,6 +152,11 @@ class Item extends Model implements HasMedia, DefinesMediaPath
             ->withTimestamps();
     }
 
+    public function hasVariants(): bool
+    {
+        return $this->variants()->exists();
+    }
+
     public function getBasePriceAttribute(): float
     {
         return $this->base_price_cents / 100;

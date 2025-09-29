@@ -2,10 +2,14 @@
 
 namespace App\Exceptions\V1\Media;
 
-use Exception;
+use App\Exceptions\V1\BaseApiException;
 
-class UrlImageException extends Exception
+class UrlImageException extends BaseApiException
 {
+
+    protected $code             = 400;
+    protected string $errorType = 'URL_IMAGE_ERROR';
+
     public static function invalidUrl(string $url): self
     {
         return new self("URL invalide ou inaccessible: $url");
@@ -13,7 +17,7 @@ class UrlImageException extends Exception
 
     public static function downloadFailed(string $url, string $reason): self
     {
-        return new self("Échec du téléchargement depuis $url: {$reason}");
+        return new self("Échec du téléchargement depuis $url: $reason");
     }
 
     public static function domainBlocked(string $domain): self

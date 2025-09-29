@@ -26,6 +26,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 readonly class ItemService implements ItemServiceInterface
 {
@@ -85,6 +86,12 @@ readonly class ItemService implements ItemServiceInterface
             ]);
 
             throw ItemCreationException::queryError($e);
+        } catch(Throwable $e){
+            if($e instanceof ItemCreationException){
+                throw $e;
+            }
+
+            throw ItemCreationException::default($e);
         }
     }
 
@@ -118,6 +125,12 @@ readonly class ItemService implements ItemServiceInterface
             ]);
 
             throw ItemUpdateException::queryError($e);
+        } catch(Throwable $e){
+            if($e instanceof ItemUpdateException){
+                throw $e;
+            }
+
+            throw ItemUpdateException::default($e);
         }
     }
 
@@ -128,6 +141,10 @@ readonly class ItemService implements ItemServiceInterface
     {
         try {
             return DB::transaction(function () use ($item) {
+                if($item->hasVariants()){
+                    throw ItemDeletionException::hasVariants();
+                }
+
                 $storeId = $item->store_id;
 
                 $this->itemAttachmentService->detachAllIngredients($item);
@@ -151,7 +168,11 @@ readonly class ItemService implements ItemServiceInterface
                     $this->clearCache($storeId);
                 }
 
-                return $deleted;
+                if(! $deleted){
+                    throw ItemDeletionException::default(null);
+                }
+
+                return true;
             });
         } catch (QueryException $e) {
             Log::error("Erreur lors de la suppression de l'item", [
@@ -161,6 +182,12 @@ readonly class ItemService implements ItemServiceInterface
             ]);
 
             throw ItemDeletionException::queryError($e);
+        } catch(Throwable $e){
+            if($e instanceof ItemDeletionException){
+                throw $e;
+            }
+
+            throw ItemDeletionException::default($e);
         }
     }
 

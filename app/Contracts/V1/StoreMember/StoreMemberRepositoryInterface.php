@@ -13,4 +13,6 @@ interface StoreMemberRepositoryInterface extends BaseRepositoryInterface
 
     public function nextCodeNumber(int $storeId, null|StoreMemberRole|string $role = null): int;
 
+    public function codeExists(int $storeId, int $code): bool;
+
 }

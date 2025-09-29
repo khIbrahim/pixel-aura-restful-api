@@ -7,7 +7,7 @@ use App\Exceptions\V1\BaseApiException;
 class EmptyAbilitiesConfigurationException extends BaseApiException
 {
 
-    protected string $errorType = 'empty_abilities_configuration';
+    protected string $errorType = 'EMPTY_ABILITIES_CONFIGURATION';
     protected int $statusCode   = 500;
 
     public static function default(): self

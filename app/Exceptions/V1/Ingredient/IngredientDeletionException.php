@@ -6,8 +6,8 @@ use App\Exceptions\V1\BaseApiException;
 
 class IngredientDeletionException extends BaseApiException
 {
-    protected int $statusCode = 422;
-    protected string $errorType = 'ingredient_deletion_failed';
+    protected int $statusCode   = 422;
+    protected string $errorType = 'INGREDIENT_DELETION_ERROR';
 
     public static function usedInActiveItems(): self
     {

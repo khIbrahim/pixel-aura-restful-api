@@ -13,10 +13,6 @@ interface OptionRepositoryInterface extends BaseRepositoryInterface
 
     public function findOrCreateOption(CreateOptionDTO $data): Option;
 
-    public function findOption(int $id): ?Option;
-
-    public function createOption(CreateOptionDTO $data): Option;
-
     public function list(array $filters, int $perPage = 25): LengthAwarePaginator;
 
     public function findOptionsByIds(array $ids): Collection;

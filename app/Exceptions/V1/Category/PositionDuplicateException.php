@@ -6,7 +6,7 @@ use App\Exceptions\V1\BaseApiException;
 
 class PositionDuplicateException extends BaseApiException
 {
-    protected string $errorType = 'position_duplicate';
+    protected string $errorType = 'POSITION_DUPLICATE_ERROR';
     protected $code             = 500;
 
     public static function withPosition(int $position): self
