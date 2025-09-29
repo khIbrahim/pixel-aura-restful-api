@@ -47,6 +47,7 @@ class OptionListController extends Controller
 
         try {
             $optionList = $this->optionListService->create($data);
+            $optionList->load(['options', 'items']);
 
             return response()->json([
                 'message' => "La liste d'options a été créée avec succès.",

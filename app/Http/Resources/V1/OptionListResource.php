@@ -4,13 +4,12 @@ namespace App\Http\Resources\V1;
 
 use App\Models\V1\OptionList;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * @mixin OptionList
  * @property $pivot
  */
-class OptionListResource extends JsonResource
+class OptionListResource extends AbstractPivotResource
 {
 
     public function toArray(Request $request): array
@@ -26,14 +25,12 @@ class OptionListResource extends JsonResource
             'max_selections' => $this->max_selections,
 
             'pivot' => [
-                'item'            => $this->pivot->item_id,
-                'is_required'     => $this->pivot->is_required,
-                'min_selections'  => $this->pivot->min_selections,
-                'max_selections'  => $this->pivot->max_selections,
-                'display_order'   => $this->pivot->display_order,
-                'is_active'       => $this->pivot->is_active,
-                'created_at'      => $this->pivot->created_at?->toISOString(),
-                'updated_at'      => $this->pivot->updated_at?->toISOString(),
+                'item'            => $this->getPivotValue('item_id'),
+                'is_required'     => $this->getPivotValue('is_required'),
+                'min_selections'  => $this->getPivotValue('min_selections'),
+                'max_selections'  => $this->getPivotValue('max_selections'),
+                'display_order'   => $this->getPivotValue('display_order'),
+                'is_active'       => $this->getPivotValue('is_active'),
             ],
 
             'options' => OptionResource::collection($this->whenLoaded('options')),
