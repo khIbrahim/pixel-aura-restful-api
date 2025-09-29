@@ -3,9 +3,9 @@
 namespace App\Console\Commands\V1;
 
 use App\Constants\V1\Defaults;
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\Models\V1\Store;
 use App\Models\V1\User;
-use App\Services\V1\Item\SkuGeneratorService;
 use App\Services\V1\StoreService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
@@ -68,7 +68,7 @@ class CreateStoreCommand extends Command
             return null;
         }
 
-        $defaultSku = app(SkuGeneratorService::class)->generateSku($name, -1);
+        $defaultSku = app(SkuGeneratorServiceInterface::class)->generate($name, Store::class);
         $sku = $this->ask("Sku du store (URL-friendly)", $defaultSku);
 
         if (Store::query()->where('sku', $sku)->exists()) {

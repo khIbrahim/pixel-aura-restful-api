@@ -4,6 +4,7 @@ namespace App\Services\V1\Category;
 
 use App\Contracts\V1\Category\CategoryRepositoryInterface;
 use App\Contracts\V1\Category\CategoryServiceInterface;
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\Category\CreateCategoryDTO;
 use App\DTO\V1\Category\UpdateCategoryDTO;
 use App\Events\V1\Category\CategoryCreated;
@@ -14,7 +15,6 @@ use App\Exceptions\V1\Category\CategoryDeletionException;
 use App\Exceptions\V1\Category\CategoryUpdateException;
 use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Models\V1\Category;
-use App\Services\V1\Item\SkuGeneratorService;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -22,15 +22,15 @@ use Throwable;
 readonly class CategoryService implements CategoryServiceInterface
 {
     public function __construct(
-        private CategoryRepositoryInterface $categoryRepository,
-        private SkuGeneratorService         $skuGeneratorService
+        private CategoryRepositoryInterface  $categoryRepository,
+        private SkuGeneratorServiceInterface $skuGeneratorService
     ){}
 
     public function create(CreateCategoryDTO $data): Category
     {
         return DB::transaction(function () use ($data) {
             try {
-                $sku = $this->skuGeneratorService->generateSku($data->name, $data->store_id);
+                $sku = $this->skuGeneratorService->generate($data->name, Category::class, null, ['store_id' => $data->store_id]);
 
                 if ($this->categoryRepository->skuExists($sku, $data->store_id)) {
                     throw CategoryCreationException::skuAlreadyExists($sku);

@@ -3,6 +3,7 @@
 namespace App\Hydrators\V1\OptionList;
 
 use App\Contracts\V1\OptionList\OptionListRepositoryInterface;
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\OptionList\CreateOptionListDTO;
 use App\DTO\V1\OptionList\OptionListPivotDTO;
 use App\DTO\V1\OptionList\UpdateOptionListDTO;
@@ -11,14 +12,13 @@ use App\Http\Requests\V1\OptionList\CreateOptionListRequest;
 use App\Http\Requests\V1\OptionList\UpdateOptionListRequest;
 use App\Hydrators\V1\BaseHydrator;
 use App\Models\V1\OptionList;
-use App\Services\V1\Item\SkuGeneratorService;
 
 class OptionListHydrator extends BaseHydrator
 {
 
     public function __construct(
         private readonly OptionListRepositoryInterface $optionListRepository,
-        private readonly SkuGeneratorService $skuGeneratorService
+        private readonly SkuGeneratorServiceInterface  $skuGeneratorService
     ){}
 
     public function fromCreateRequest(CreateOptionListRequest $request): CreateOptionListDTO
@@ -26,7 +26,7 @@ class OptionListHydrator extends BaseHydrator
         $data    = $request->validated();
         $storeId = $request->attributes->get('store')?->id ?? $request->attributes->get('device')?->id ?? $request->user()->id;
         $name    = (string) $data['name'];
-        $sku     = $this->skuGeneratorService->generateSku($name, $storeId);
+        $sku     = $this->skuGeneratorService->generate($name, OptionList::class, null, ['store_id' => $storeId]);
 
         return $this->fromArray(array_merge($data, [
             'store_id' => $storeId,

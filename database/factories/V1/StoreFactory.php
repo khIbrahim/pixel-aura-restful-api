@@ -2,11 +2,10 @@
 
 namespace Database\Factories\V1;
 
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\Models\V1\Store;
 use App\Models\V1\User;
-use App\Services\V1\Item\SkuGeneratorService;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 use Symfony\Component\Intl\Currencies;
 use Symfony\Component\Intl\Languages;
 use Symfony\Component\Intl\Timezones;
@@ -22,7 +21,7 @@ class StoreFactory extends Factory
 
         return [
             'name'            => $name,
-            'sku'             => app(SkuGeneratorService::class)->generateSku($name, -1),
+            'sku'             => app(SkuGeneratorServiceInterface::class)->generateSku($name, -1),
             'owner_id'        => User::factory(),
             'phone'           => $this->faker->phoneNumber,
             'email'           => $this->faker->unique()->safeEmail,

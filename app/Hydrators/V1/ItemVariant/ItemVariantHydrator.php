@@ -2,6 +2,7 @@
 
 namespace App\Hydrators\V1\ItemVariant;
 
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\ItemVariant\CreateItemVariantDTO;
 use App\DTO\V1\ItemVariant\UpdateItemVariantDTO;
 use App\Http\Requests\V1\ItemVariant\CreateItemVariantRequest;
@@ -9,19 +10,18 @@ use App\Http\Requests\V1\ItemVariant\UpdateItemVariantRequest;
 use App\Hydrators\V1\BaseHydrator;
 use App\Models\V1\Item;
 use App\Models\V1\ItemVariant;
-use App\Services\V1\Item\SkuGeneratorService;
 
 class ItemVariantHydrator extends BaseHydrator
 {
     public function __construct(
-        private readonly SkuGeneratorService $service
+        private readonly SkuGeneratorServiceInterface $service
     ) {}
 
     public function fromCreateRequest(CreateItemVariantRequest $request, Item $item): CreateItemVariantDTO
     {
         $data = $request->validated();
         $name = (string) $data['name'];
-        $sku = $this->service->generateSku($name, $item->store_id, true, $name, $item->id);
+        $sku  = $this->service->generateForVariant($item->name, $name, ItemVariant::class, (string) $item->store_id, ['store_id' => $item->store_id, 'item_id' => $item->id]);
 
         return new CreateItemVariantDTO(
             name: $name,

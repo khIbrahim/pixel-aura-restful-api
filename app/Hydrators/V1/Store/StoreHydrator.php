@@ -2,10 +2,11 @@
 
 namespace App\Hydrators\V1\Store;
 
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\Store\CreateStoreDTO;
 use App\Http\Requests\V1\StoreMember\CreateStoreRequest;
 use App\Hydrators\V1\BaseHydrator;
-use App\Services\V1\Item\SkuGeneratorService;
+use App\Models\V1\Store;
 use DateTimeZone;
 use Locale;
 
@@ -13,7 +14,7 @@ class StoreHydrator extends BaseHydrator
 {
 
     public function __construct(
-        private readonly SkuGeneratorService $skuGeneratorService
+        private readonly SkuGeneratorServiceInterface $skuGeneratorService
     ){}
 
     /** @throws */
@@ -41,7 +42,7 @@ class StoreHydrator extends BaseHydrator
         $data['language'] = $language;
 
         $name = (string) $data['name'];
-        $sku  = $this->skuGeneratorService->generateSku($name, -1);
+        $sku  = $this->skuGeneratorService->generate($name, Store::class);
 
         $data['sku'] = $sku;
 

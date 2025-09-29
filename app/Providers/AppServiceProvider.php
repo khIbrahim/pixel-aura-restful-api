@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\V1\Media\MediaManagerInterface;
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\Models\V1\Auth\PersonalAccessToken;
 use App\Models\V1\Device;
 use App\Models\V1\Store;
@@ -13,6 +14,7 @@ use App\Providers\V1\RateLimitServiceProvider;
 use App\Providers\V1\StoreMemberAuthServiceProvider;
 use App\Providers\V1\StoreMemberServiceProvider;
 use App\Providers\V1\StoreServiceProvider;
+use App\Repositories\V1\Shared\SkuGeneratorService;
 use App\Services\V1\Media\ImageProcessor;
 use App\Services\V1\Media\MediaManager;
 use App\Services\V1\Media\MediaValidator;
@@ -28,6 +30,8 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
+        $this->app->bind(SkuGeneratorServiceInterface::class, fn($app) => new SkuGeneratorService());
+
         $this->app->register(StoreServiceProvider::class);
         $this->app->register(CategoryServiceProvider::class);
         $this->app->register(ItemServiceProvider::class);

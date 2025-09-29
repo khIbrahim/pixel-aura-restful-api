@@ -2,6 +2,7 @@
 
 namespace App\Hydrators\V1\Item;
 
+use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\Ingredient\CreateIngredientDTO;
 use App\DTO\V1\Item\CreateItemDTO;
 use App\DTO\V1\Item\UpdateItemDTO;
@@ -11,11 +12,10 @@ use App\Http\Requests\V1\Item\UpdateItemRequest;
 use App\Http\Requests\V1\StoreMember\CreateItemRequest;
 use App\Hydrators\V1\BaseHydrator;
 use App\Models\V1\Item;
-use App\Services\V1\Item\SkuGeneratorService;
 
 class ItemHydrator extends BaseHydrator
 {
-    public function __construct(private readonly SkuGeneratorService $skuGeneratorService) {}
+    public function __construct(private readonly SkuGeneratorServiceInterface $skuGeneratorService) {}
 
     public function fromCreateRequest(CreateItemRequest $request): CreateItemDTO
     {
@@ -24,7 +24,7 @@ class ItemHydrator extends BaseHydrator
         $storeId = $request->attributes->get('store')->id ?? $request->user()->store_id;
         $categoryId = $data['category_id'];
         $name = $data['name'];
-        $sku = $data['sku'] ?? $this->skuGeneratorService->generateItemSku($name, $storeId);
+        $sku = $data['sku'] ?? $this->skuGeneratorService->generate($name, Item::class, (string) $storeId, ['store_id' => $storeId]);
 
         $options = [];
         foreach ((array) ($data['options'] ?? []) as $option) {
@@ -43,7 +43,7 @@ class ItemHydrator extends BaseHydrator
                 name: $variant['name'] ?? null,
                 description: $variant['description'] ?? null,
                 price_cents: $variant['price_cents'] ?? null,
-                sku: $variant['sku'] ?? $this->skuGeneratorService->generateVariantSku($name, $variant['name'] ?? '', $storeId, null),
+                sku: $variant['sku'] ?? $this->skuGeneratorService->generateForVariant($name, (string) ($variant['name'] ?? ''), Item::class, (string) $storeId, ['store_id' => $storeId]),
                 is_active: $variant['is_active'] ?? true,
                 store_id: $storeId,
                 id: $variant['id'] ?? null
