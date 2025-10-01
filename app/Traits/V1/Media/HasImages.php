@@ -68,4 +68,9 @@ trait HasImages
         return $this->getMedia('gallery')->collect();
     }
 
+    public function getThumbnailUrl(): ?string
+    {
+        return $this->getMainImage()?->getUrl('thumbnail');
+    }
+
 }

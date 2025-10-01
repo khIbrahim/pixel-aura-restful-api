@@ -2,37 +2,48 @@
 
 namespace App\Events\V1\Category;
 
-use App\Models\V1\Category;
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
+use App\Events\V1\BaseEvent;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class CategoryDeleted implements ShouldBroadcast
+final class CategoryDeleted extends BaseEvent
 {
-    use InteractsWithSockets, SerializesModels;
 
-    public function __construct(public Category $category){}
+    public function __construct(
+        public int $categoryId,
+        public int $store_id,
+        ?int $sender_device_id = null,
+        ?string $sender_device_type = null,
+        ?string $correlation_id = null
+    ){
+        parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
+    }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('store.' . $this->category->store_id . '.categories'),
+            new PrivateChannel('store.' . $this->store_id . '.catalog'),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'category.deleted';
+        return 'CategoryDeleted';
     }
 
     public function broadcastWith(): array
     {
-        return [
-            'id' => $this->category->id,
-        ];
+        return array_merge($this->baseBroadcastWith(), [
+            'store'       => [
+                'id'      => $this->store_id,
+            ],
+            'subject' => [
+                'type' => 'Category',
+                'id'   => $this->categoryId
+            ],
+            'data' => [
+                'category_id' => $this->categoryId,
+                'deleted_at'  => $this->occurred_at
+            ],
+        ]);
     }
 }

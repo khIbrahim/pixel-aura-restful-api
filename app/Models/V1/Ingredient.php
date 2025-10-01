@@ -25,6 +25,8 @@ use Spatie\MediaLibrary\HasMedia;
  * @property bool   $is_active
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Store  $store
+ * @property Item[] $items
  */
 class Ingredient extends Model implements HasMedia, DefinesMediaPath
 {

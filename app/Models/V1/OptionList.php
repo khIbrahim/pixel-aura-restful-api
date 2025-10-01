@@ -22,6 +22,8 @@ use Carbon\Carbon;
  * @property Carbon        $updated_at
  * @property Carbon|null   $deleted_at
  * @property Option[]|null $options
+ * @property Item[]|null   $items
+ * @property Store         $store
  */
 class OptionList extends Model
 {

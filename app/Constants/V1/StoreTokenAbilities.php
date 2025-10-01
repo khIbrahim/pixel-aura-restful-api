@@ -154,6 +154,9 @@ final class StoreTokenAbilities
     public const string MEDIA_UPLOAD = 'media.upload';
     public const string MEDIA_DELETE = 'media.delete';
 
+    // Catalog
+    public const string CATALOG_VIEW = 'catalog.view';
+
     public static function getAbilitiesByRole(StoreMemberRole $role): array
     {
         return match ($role) {
@@ -202,7 +205,10 @@ final class StoreTokenAbilities
                 self::CATEGORY_READ, self::CATEGORY_CREATE, self::CATEGORY_UPDATE, self::CATEGORY_DELETE, self::CATEGORY_REORDER, self::CATEGORY_ACTIVATE,
 
                 self::CREATE_INGREDIENT, self::INGREDIENT_READ, self::UPDATE_INGREDIENT, self::INGREDIENT_DELETE,
-                self::OPTION_CREATE, self::OPTION_READ, self::UPDATE_OPTION, self::OPTION_DELETE
+                self::OPTION_CREATE, self::OPTION_READ, self::UPDATE_OPTION, self::OPTION_DELETE,
+                self::OPTION_LIST_CREATE, self::OPTION_LIST_READ, self::OPTION_LIST_UPDATE, self::OPTION_LIST_DELETE,
+                self::MEDIA_VIEW, self::MEDIA_UPLOAD, self::MEDIA_DELETE,
+                self::CATALOG_VIEW
             ],
             StoreMemberRole::Manager => [
                 self::STORE_READ, self::STORE_UPDATE,
@@ -244,7 +250,10 @@ final class StoreTokenAbilities
 
                 self::CATEGORY_READ, self::CATEGORY_CREATE, self::CATEGORY_UPDATE, self::CATEGORY_DELETE, self::CATEGORY_REORDER, self::CATEGORY_ACTIVATE,
                 self::CREATE_INGREDIENT, self::INGREDIENT_READ, self::UPDATE_INGREDIENT, self::INGREDIENT_DELETE,
-                self::OPTION_CREATE, self::OPTION_READ, self::UPDATE_OPTION, self::OPTION_DELETE
+                self::OPTION_CREATE, self::OPTION_READ, self::UPDATE_OPTION, self::OPTION_DELETE,
+                self::OPTION_LIST_CREATE, self::OPTION_LIST_READ, self::OPTION_LIST_UPDATE, self::OPTION_LIST_DELETE,
+                self::MEDIA_VIEW, self::MEDIA_UPLOAD, self::MEDIA_DELETE,
+                self::CATALOG_VIEW
             ],
             StoreMemberRole::Cashier => [
                 self::STORE_READ,
@@ -275,7 +284,10 @@ final class StoreTokenAbilities
                 self::CATEGORY_READ,
 
                 self::INGREDIENT_READ,
-                self::OPTION_READ
+                self::OPTION_READ,
+                self::OPTION_LIST_READ,
+                self::MEDIA_VIEW, self::MEDIA_UPLOAD,
+                self::CATALOG_VIEW
             ],
             StoreMemberRole::Kitchen => [
                 self::STORE_READ,
@@ -292,7 +304,9 @@ final class StoreTokenAbilities
                 self::MEMBERS_LOGOUT, self::MEMBERS_AUTH,
                 self::CATEGORY_READ,
                 self::INGREDIENT_READ,
-                self::OPTION_READ
+                self::OPTION_READ,
+                self::OPTION_LIST_READ,
+                self::MEDIA_VIEW, self::CATALOG_VIEW
             ],
         };
     }

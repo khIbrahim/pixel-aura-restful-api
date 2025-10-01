@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
@@ -48,7 +49,7 @@ use Spatie\MediaLibrary\HasMedia;
  * @property StoreMember|null   $updater
  * @property ItemVariant[]|null $variants
  * @property Ingredient[]|null  $ingredients
- * @property Option[]|null      $options
+ * @property Collection<Option>|null      $options
  * @property OptionList[]|null  $optionLists
  */
 class Item extends Model implements HasMedia, DefinesMediaPath

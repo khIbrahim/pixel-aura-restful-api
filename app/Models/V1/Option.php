@@ -24,6 +24,8 @@ use Spatie\MediaLibrary\HasMedia;
  * @property int         $option_list_id Identifiant de la liste d'options associée
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property Store       $store
+ * @property OptionList  $list
  */
 class Option extends Model implements HasMedia, DefinesMediaPath
 {

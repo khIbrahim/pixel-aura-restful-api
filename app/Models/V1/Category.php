@@ -8,24 +8,26 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
- * @property int           $id
- * @property int           $store_id
- * @property string        $name
- * @property string|null   $description
- * @property array|null    $tags
- * @property string        $sku
- * @property int           $position
- * @property null|int      $parent_id
- * @property boolean       $is_active
- * @property Carbon        $created_at
- * @property Carbon        $updated_at
- * @property Category|null $parent
- * @property Store         $store
- * @property Category[]    $children
+ * @property int              $id
+ * @property int              $store_id
+ * @property string           $name
+ * @property string|null      $description
+ * @property array|null       $tags
+ * @property string           $sku
+ * @property int              $position
+ * @property null|int         $parent_id
+ * @property boolean          $is_active
+ * @property Carbon           $created_at
+ * @property Carbon           $updated_at
+ * @property Category|null    $parent
+ * @property Store            $store
+ * @property Category[]       $children
+ * @property Collection<Item> $items
  */
 class Category extends Model implements HasMedia, DefinesMediaPath
 {

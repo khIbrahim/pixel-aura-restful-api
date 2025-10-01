@@ -249,4 +249,12 @@ abstract class BaseRepository implements BaseRepositoryInterface
         $this->model = app($this->model());
         return $this;
     }
+
+    public function increment(Model $model, string $field, int $amount = 1): int
+    {
+        return DB::transaction(function () use ($model, $field, $amount){
+            return $model->increment($field, $amount);
+        });
+    }
+
 }

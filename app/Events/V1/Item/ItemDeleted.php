@@ -2,38 +2,49 @@
 
 namespace App\Events\V1\Item;
 
-use Illuminate\Broadcasting\InteractsWithSockets;
+use App\Events\V1\BaseEvent;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class ItemDeleted implements ShouldBroadcast
+final class ItemDeleted extends BaseEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
         public int $itemId,
-        public int $storeId
-    ){}
+        public int $storeId,
+        ?int $sender_device_id = null,
+        ?string $sender_device_type = null,
+        ?string $correlation_id = null
+    ){
+        parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
+    }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('store.' . $this->storeId . '.items'),
+            new PrivateChannel('store.' . $this->storeId . '.catalog'),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'item.created';
+        return 'ItemDeleted';
     }
 
     public function broadcastWith(): array
     {
-        return [
-            'item_id' => $this->itemId,
-        ];
+        return array_merge($this->baseBroadcastWith(), [
+            'store' => [
+                'id' => $this->storeId,
+            ],
+            'subject' => [
+                'type' => 'item',
+                'id'   => $this->itemId,
+            ],
+            'data' => [
+                'id'       => $this->itemId,
+                'store_id' => $this->storeId,
+            ]
+        ]);
     }
 
 }

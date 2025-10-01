@@ -144,7 +144,7 @@ readonly class CategoryService implements CategoryServiceInterface
                 $this->categoryRepository->delete($category);
                 $this->categoryRepository->shiftRangeDown($storeId, $deletedPosition + 1, PHP_INT_MAX);
 
-                broadcast(new CategoryDeleted($category))->toOthers();
+                broadcast(new CategoryDeleted($category->id))->toOthers();
             } catch (Throwable $e) {
                 if ($e instanceof CategoryDeletionException) {
                     throw $e;

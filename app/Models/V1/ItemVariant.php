@@ -3,6 +3,7 @@
 namespace App\Models\V1;
 
 use App\Traits\V1\Media\HasImages;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
@@ -18,6 +19,8 @@ use Spatie\MediaLibrary\HasMedia;
  * @property int $store_id Identifiant du magasin auquel appartient la variante
  * @property Item $item L'item parent auquel appartient cette variante
  * @property Store $store Le magasin auquel appartient cette variante
+ * @property Carbon $created_at Date et heure de création de la variante
+ * @property Carbon $updated_at Date et heure de la dernière mise à jour de la variante
  */
 class ItemVariant extends Model implements HasMedia
 {

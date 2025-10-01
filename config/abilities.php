@@ -172,6 +172,11 @@ return [
         'media.view'      => 'Voir les médias',
         'media.upload'    => 'Uploader des médias',
         'media.delete'    => 'Supprimer des médias',
+
+        //Catalog
+        'catalog.view'    => 'Voir le catalogue',
+        'catalog.update'  => 'Mettre à jour le catalogue',
+        'catalog.publish' => 'Publier le catalogue',
     ],
 
     /*
@@ -259,6 +264,10 @@ return [
         'media.manage' => [
             'media.view', 'media.upload', 'media.delete'
         ],
+
+        'catalog.manage' => [
+            'catalog.view', 'catalog.update', 'catalog.publish'
+        ],
     ],
 
     /*
@@ -273,7 +282,7 @@ return [
             '@delivery.full','@tax.full','@session.cash','@ticket','@price.runtime',
             'customer.read','customer.create','customer.update','customer.delete',
             '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage',
-            '@media.manage'
+            '@media.manage', '@catalog.manage'
         ],
 
         StoreMemberRole::Manager->value => [
@@ -291,7 +300,7 @@ return [
             'members.auth','members.logout',
             'tax.read','tax.update',
             '@item.manage', '@ingredient.manage', '@option.manage', '@option_list.manage',
-            '@media.manage'
+            '@media.manage', '@catalog.manage'
         ],
 
         StoreMemberRole::Cashier->value => [
@@ -311,6 +320,8 @@ return [
             'ingredient.read',
             'option.read',
             'option_list.read',
+            'media.view',
+            'catalog.view',
         ],
 
         StoreMemberRole::Kitchen->value => [
@@ -320,6 +331,8 @@ return [
             'ingredient.read',
             'option.read',
             'option_list.read',
+            'media.view',
+            'catalog.view',
         ],
     ],
 
