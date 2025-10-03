@@ -2,7 +2,7 @@
 
 namespace App\DTO\V1\StoreMember;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 
 final readonly class UpdateStoreMemberDTO
 {

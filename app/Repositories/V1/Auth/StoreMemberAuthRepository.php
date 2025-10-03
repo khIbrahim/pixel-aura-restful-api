@@ -3,7 +3,7 @@
 namespace App\Repositories\V1\Auth;
 
 use App\Contracts\V1\Auth\StoreMemberAuthRepositoryInterface;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Exceptions\InvalidRolePrefixException;
 use App\Models\V1\Device;
 use App\Models\V1\StoreMember;

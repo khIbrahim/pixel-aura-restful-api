@@ -1,7 +1,7 @@
 <?php
 namespace App\Constants\V1;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use ReflectionClass;
 
 final class StoreTokenAbilities

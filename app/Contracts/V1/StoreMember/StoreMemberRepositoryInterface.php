@@ -3,7 +3,7 @@
 namespace App\Contracts\V1\StoreMember;
 
 use App\Contracts\V1\Base\BaseRepositoryInterface;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface StoreMemberRepositoryInterface extends BaseRepositoryInterface

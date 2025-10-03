@@ -7,7 +7,7 @@ use App\Contracts\V1\StoreMember\StoreMemberRepositoryInterface;
 use App\Contracts\V1\StoreMember\StoreMemberServiceInterface;
 use App\DTO\V1\StoreMember\CreateStoreMemberDTO;
 use App\DTO\V1\StoreMember\UpdateStoreMemberDTO;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Exceptions\V1\StoreMember\StoreMemberCreationException;
 use App\Exceptions\V1\StoreMember\StoreMemberDeletionException;
 use App\Exceptions\V1\StoreMember\StoreMemberUpdateException;

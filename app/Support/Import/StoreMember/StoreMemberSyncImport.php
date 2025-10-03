@@ -3,7 +3,7 @@
 namespace App\Support\Import\StoreMember;
 
 use App\Constants\V1\Defaults;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Events\V1\Import\ImportCompleted;
 use App\Models\V1\StoreMember;
 use App\Services\V1\StoreMember\StoreMemberCodeService;

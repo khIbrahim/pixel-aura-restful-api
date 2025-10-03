@@ -46,6 +46,7 @@ return new class extends Migration
 
             $table->json("tags")->nullable();
             $table->json('metadata')->nullable();
+            $table->integer('preparation_time_minutes')->nullable();
 
             $table->foreignId('created_by')
                 ->nullable()

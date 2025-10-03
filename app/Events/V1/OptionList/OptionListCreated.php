@@ -10,14 +10,11 @@ use Illuminate\Broadcasting\PrivateChannel;
 final class OptionListCreated extends BaseEvent
 {
 
-    public readonly string $event_id;
-    public readonly string $occurred_at;
-
     public function __construct(
         public readonly OptionList $optionList,
-        public readonly ?int       $sender_device_id   = null,
-        public readonly ?string    $sender_device_type = null,
-        public readonly ?string    $correlation_id     = null
+        ?int       $sender_device_id   = null,
+        ?string    $sender_device_type = null,
+        ?string    $correlation_id     = null
     ) {
         parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
     }

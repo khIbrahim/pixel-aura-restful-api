@@ -6,7 +6,7 @@ use App\Constants\V1\Defaults;
 use App\Contracts\V1\Store\StoreRepositoryInterface;
 use App\Contracts\V1\Store\StoreServiceInterface;
 use App\DTO\V1\Store\CreateStoreDTO;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
 use App\Models\V1\User;

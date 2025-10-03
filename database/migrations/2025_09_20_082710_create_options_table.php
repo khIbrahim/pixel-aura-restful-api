@@ -12,14 +12,17 @@ return new class extends Migration
         Schema::create('options', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('store_id')->constrained('stores')->onDelete('cascade');
+            $table->foreignId('store_id')
+                ->constrained('stores')
+                ->onDelete('cascade');
+            $table->foreignId('option_list_id')
+                ->constrained('option_lists')
+                ->cascadeOnDelete();
             $table->string('name');
             $table->text('description')->nullable();
             $table->integer('price_cents');
             $table->boolean('is_active')->default(true);
-            $table->foreignId('option_list_id')
-                ->constrained('option_lists')
-                ->cascadeOnDelete();
+            $table->integer('preparation_time_minutes')->nullable();
 
             $table->timestamps();
         });

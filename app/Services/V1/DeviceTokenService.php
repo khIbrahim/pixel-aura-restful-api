@@ -2,10 +2,9 @@
 
 namespace App\Services\V1;
 
-use App\Enum\DeviceType;
+use App\Enum\V1\DeviceType;
 use App\Models\V1\Device;
 use App\Models\V1\Store;
-use App\Models\V1\StoreMember;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\NewAccessToken;
 use Throwable;

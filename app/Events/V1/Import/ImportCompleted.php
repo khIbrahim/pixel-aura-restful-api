@@ -2,50 +2,58 @@
 
 namespace App\Events\V1\Import;
 
+use App\Events\V1\BaseEvent;
 use App\Support\Results\ImportResult;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class ImportCompleted implements ShouldBroadcast
+class ImportCompleted extends BaseEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public ImportResult $result;
-    public int $storeId;
-
-    public function __construct(ImportResult $result, int $storeId)
-    {
-        $this->result  = $result;
-        $this->storeId = $storeId;
+    public function __construct(
+        public ImportResult $result,
+        public int          $storeId,
+        ?int $sender_device_id = null,
+        ?string $sender_device_type = null,
+        ?string $correlation_id = null
+    ){
+        parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
     }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel("import.store.$this->storeId"),
+            new PrivateChannel("store." . $this->storeId . ".import"),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'import.completed';
+        return 'ImportCompleted';
     }
 
     public function broadcastWith(): array
     {
-        return [
-            'result' => [
-                'success'         => $this->result->isSuccess(),
-                'message'         => $this->result->getMessage(),
-                'total'           => $this->result->getTotal(),
-                'imported'        => $this->result->getImported(),
-                'skipped'         => $this->result->getSkipped(),
-                'error_count'     => $this->result->getErrorCount(),
-                'process_time_ms' => $this->result->getProcessTimeMs(),
-            ],
+        $data  = $this->baseBroadcastWith();
+
+        $data['store'] = [
+            'id'  => $this->storeId,
         ];
+
+        $data['subject'] = [
+            'type' => 'Import',
+            'id'   => null
+        ];
+
+        $data['data'] = [
+            'success'         => $this->result->isSuccess(),
+            'message'         => $this->result->getMessage(),
+            'total'           => $this->result->getTotal(),
+            'imported'        => $this->result->getImported(),
+            'skipped'         => $this->result->getSkipped(),
+            'error_count'     => $this->result->getErrorCount(),
+            'process_time_ms' => $this->result->getProcessTimeMs(),
+        ];
+
+        return $data;
     }
 }

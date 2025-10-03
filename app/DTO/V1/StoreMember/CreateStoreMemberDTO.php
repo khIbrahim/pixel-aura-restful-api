@@ -4,7 +4,7 @@ namespace App\DTO\V1\StoreMember;
 
 use App\Constants\V1\Defaults;
 use App\DTO\V1\Abstract\BaseDTO;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Store;
 
 final readonly class CreateStoreMemberDTO extends BaseDTO

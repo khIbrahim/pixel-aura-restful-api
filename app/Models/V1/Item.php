@@ -17,40 +17,41 @@ use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
- * @property int                $id
- * @property int                $store_id
- * @property int|null           $category_id
- * @property int|null           $tax_id
- * @property string             $name
- * @property string             $sku
- * @property string|null        $barcode
- * @property string|null        $description
- * @property string             $currency
- * @property int                $base_price_cents
- * @property int                $current_cost_cents
- * @property bool               $is_active
- * @property bool               $track_inventory
- * @property int                $stock
- * @property bool               $loyalty_eligible
- * @property int|null           $age_restriction
- * @property int|null           $reorder_level
- * @property int|null           $weight_grams
- * @property array|null         $tags
- * @property array|null         $metadata
- * @property int|null           $created_by
- * @property int|null           $updated_by
- * @property Carbon             $created_at
- * @property Carbon             $updated_at
- * @property Carbon|null        $deleted_at
- * @property Store              $store
- * @property Category|null      $category
- * @property Tax|null           $tax
- * @property StoreMember|null   $creator
- * @property StoreMember|null   $updater
- * @property ItemVariant[]|null $variants
- * @property Ingredient[]|null  $ingredients
- * @property Collection<Option>|null      $options
- * @property OptionList[]|null  $optionLists
+ * @property int                     $id
+ * @property int                     $store_id
+ * @property int|null                $category_id
+ * @property int|null                $tax_id
+ * @property string                  $name
+ * @property string                  $sku
+ * @property string|null             $barcode
+ * @property string|null             $description
+ * @property string                  $currency
+ * @property int                     $base_price_cents
+ * @property int                     $current_cost_cents
+ * @property bool                    $is_active
+ * @property bool                    $track_inventory
+ * @property int                     $stock
+ * @property bool                    $loyalty_eligible
+ * @property int|null                $age_restriction
+ * @property int|null                $reorder_level
+ * @property int|null                $weight_grams
+ * @property array|null              $tags
+ * @property array|null              $metadata
+ * @property int|null                $created_by
+ * @property int|null                $updated_by
+ * @property Carbon                  $created_at
+ * @property Carbon                  $updated_at
+ * @property Carbon|null             $deleted_at
+ * @property Store                   $store
+ * @property Category|null           $category
+ * @property Tax|null                $tax
+ * @property StoreMember|null        $creator
+ * @property StoreMember|null        $updater
+ * @property ItemVariant[]|null      $variants
+ * @property Ingredient[]|null       $ingredients
+ * @property Collection<Option>|null $options
+ * @property OptionList[]|null       $optionLists
+ * @property int                     $preparation_time_minutes
  */
 class Item extends Model implements HasMedia, DefinesMediaPath
 {
@@ -80,25 +81,27 @@ class Item extends Model implements HasMedia, DefinesMediaPath
         'metadata',
         'created_by',
         'updated_by',
+        'preparation_time_minutes',
     ];
 
     protected function casts(): array
     {
         return [
-            'base_price_cents'   => 'integer',
-            'current_cost_cents' => 'integer',
-            'is_active'          => 'boolean',
-            'track_inventory'    => 'boolean',
-            'stock'              => 'integer',
-            'loyalty_eligible'   => 'boolean',
-            'age_restriction'    => 'integer',
-            'reorder_level'      => 'integer',
-            'weight_grams'       => 'integer',
-            'metadata'           => 'array',
-            'created_at'         => 'datetime',
-            'updated_at'         => 'datetime',
-            'deleted_at'         => 'datetime',
-            'tags'               => 'array',
+            'base_price_cents'         => 'integer',
+            'current_cost_cents'       => 'integer',
+            'is_active'                => 'boolean',
+            'track_inventory'          => 'boolean',
+            'stock'                    => 'integer',
+            'loyalty_eligible'         => 'boolean',
+            'age_restriction'          => 'integer',
+            'reorder_level'            => 'integer',
+            'weight_grams'             => 'integer',
+            'metadata'                 => 'array',
+            'created_at'               => 'datetime',
+            'updated_at'               => 'datetime',
+            'deleted_at'               => 'datetime',
+            'tags'                     => 'array',
+            'preparation_time_minutes' => 'integer',
         ];
     }
 
@@ -156,26 +159,6 @@ class Item extends Model implements HasMedia, DefinesMediaPath
     public function hasVariants(): bool
     {
         return $this->variants()->exists();
-    }
-
-    public function getBasePriceAttribute(): float
-    {
-        return $this->base_price_cents / 100;
-    }
-
-    public function getCurrentCostAttribute(): float
-    {
-        return $this->current_cost_cents / 100;
-    }
-
-    public function setBasePriceAttribute(float $value): void
-    {
-        $this->attributes['base_price_cents'] = (int) ($value * 100);
-    }
-
-    public function setCurrentCostAttribute(float $value): void
-    {
-        $this->attributes['current_cost_cents'] = (int) ($value * 100);
     }
 
     public function getMediaBasePath(): string

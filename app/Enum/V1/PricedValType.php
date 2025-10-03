@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Enum;
+namespace App\Enum\V1;
 
 enum PricedValType: string
 {

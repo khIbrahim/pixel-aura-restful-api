@@ -2,46 +2,47 @@
 
 namespace App\Events\V1\Export;
 
+use App\Events\V1\BaseEvent;
 use App\Support\Results\ExportResult;
-use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
-
-class ExportCompleted implements ShouldBroadcast
+class ExportCompleted extends BaseEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public function __construct(
-        private readonly ExportResult $result,
-        private readonly int $storeId,
-    ){}
+        public ExportResult $result,
+        public int $storeId,
+        ?int $sender_device_id = null,
+        ?string $sender_device_type = null,
+        ?string $correlation_id = null
+    ){
+        parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
+    }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('store.' . $this->storeId . '.exports'),
+            new PrivateChannel('store.' . $this->storeId . '.export'),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'export.completed';
+        return 'ExportCompleted';
     }
 
     public function broadcastWith(): array
     {
-        return $this->result->toArray();
+        return [
+            'store' => [
+                'id' => $this->storeId,
+            ],
+            'subject' => [
+                'type' => 'Export',
+                'id'   => null,
+            ],
+            'data' => $this->result->toArray(),
+            ...$this->baseBroadcastWith(),
+        ];
     }
 
-    public function getResult(): ExportResult
-    {
-        return $this->result;
-    }
-
-    public function getStoreId(): int
-    {
-        return $this->storeId;
-    }
 }

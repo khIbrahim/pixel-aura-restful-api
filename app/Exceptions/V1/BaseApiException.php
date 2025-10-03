@@ -5,6 +5,7 @@ namespace App\Exceptions\V1;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Throwable;
 
 abstract class BaseApiException extends Exception
 {
@@ -12,7 +13,7 @@ abstract class BaseApiException extends Exception
     protected string $errorType = 'server_error';
     protected array $context = [];
 
-    public function __construct(string $message = '', int $code = 0, ?Exception $previous = null)
+    public function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

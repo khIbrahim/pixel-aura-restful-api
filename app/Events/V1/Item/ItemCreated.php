@@ -32,7 +32,7 @@ final class ItemCreated extends BaseEvent
         return array_merge($this->baseBroadcastWith(), [
             'store' => [
                 'id'   => $this->item->store_id,
-                'slug' => $this->item->store->slug,
+                'slug' => $this->item->store->sku,
             ],
             'subject' => [
                 'type' => 'Item',

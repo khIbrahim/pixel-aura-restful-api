@@ -27,12 +27,12 @@ class OptionCreated extends BaseEvent
 
     public function broadcastAs(): string
     {
-        return 'option.created';
+        return 'OptionCreated';
     }
 
     public function broadcastWith(): array
     {
-        $data = $this->baseBroadcastWith();
+        $data  = $this->baseBroadcastWith();
         $store = $this->option->store;
 
         $data['store'] = [

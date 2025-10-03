@@ -2,7 +2,7 @@
 
 namespace App\Models\V1;
 
-use App\Enum\DeviceType;
+use App\Enum\V1\DeviceType;
 use Carbon\Carbon;
 use Carbon\Traits\Timestamp;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

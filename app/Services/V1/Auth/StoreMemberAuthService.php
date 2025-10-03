@@ -115,7 +115,7 @@ class StoreMemberAuthService implements StoreMemberAuthServiceInterface
 
         RateLimiter::clear($key);
 
-        event(new StoreMemberAuthenticated($storeMember, $device));
+        broadcast(new StoreMemberAuthenticated($storeMember, $device))->toOthers();
 
         Log::info("Authentification réussie", [
             'store_id'  => $storeId,
@@ -132,7 +132,7 @@ class StoreMemberAuthService implements StoreMemberAuthServiceInterface
 
         if ($success) {
             $this->abilityManager->clearMemberCache($storeMember);
-            event(new StoreMemberLoggedOut($storeMember, $device));
+            broadcast(new StoreMemberLoggedOut($storeMember, $device))->toOthers();
 
             Log::info("Store member déconnecté de l'appareil", [
                 'member_id' => $storeMember->id,
@@ -157,7 +157,7 @@ class StoreMemberAuthService implements StoreMemberAuthServiceInterface
 
         if ($count > 0) {
             foreach ($devices as $device) {
-                event(new StoreMemberLoggedOut($storeMember, $device));
+                broadcast(new StoreMemberLoggedOut($storeMember, $device))->toOthers();
             }
 
             Log::info("Store member déconnecté de tout les appareils", [

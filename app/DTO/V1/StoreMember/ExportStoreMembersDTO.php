@@ -2,8 +2,7 @@
 
 namespace App\DTO\V1\StoreMember;
 
-use App\Enum\StoreMemberRole;
-use JsonSerializable;
+use App\Enum\V1\StoreMemberRole;
 
 final readonly class ExportStoreMembersDTO
 {

@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\V1;
 
-use App\Enum\DeviceType;
+use App\Enum\V1\DeviceType;
 use App\Models\V1\Store;
 use App\Services\V1\DeviceTokenService;
 use Illuminate\Console\Command;

@@ -3,7 +3,7 @@
 namespace App\Repositories\V1\StoreMember;
 
 use App\Contracts\V1\StoreMember\StoreMemberRepositoryInterface;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\StoreMember;
 use App\Models\V1\StoreMemberCounter;
 use App\Repositories\V1\BaseRepository;

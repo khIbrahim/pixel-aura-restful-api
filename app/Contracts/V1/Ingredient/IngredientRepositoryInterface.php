@@ -17,4 +17,6 @@ interface IngredientRepositoryInterface extends BaseRepositoryInterface
 
     public function findIngredientsByIds(array $ids): Collection;
 
+    public function getIngredientPrice(int $id): ?int;
+
 }

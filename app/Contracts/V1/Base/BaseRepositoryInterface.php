@@ -39,6 +39,8 @@ interface BaseRepositoryInterface
      */
     public function findManyBy(string $field, mixed $value, array $columns = ['*']): Collection;
 
+    public function findByDate(string $field, string $date, array $columns = ['*']): Collection;
+
     /**
      * Get all models
      */

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enum;
+namespace App\Enum\V1;
 
 use App\Constants\V1\StoreTokenAbilities as A;
 

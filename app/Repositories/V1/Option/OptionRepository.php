@@ -62,6 +62,13 @@ class OptionRepository extends BaseRepository implements OptionRepositoryInterfa
             ->keyBy('id');
     }
 
+    public function getOptionPrice(int $id): ?int
+    {
+        /** @var null|Option $option */
+        $option = $this->find($id);
+        return $option?->price_cents;
+    }
+
     public function model(): string
     {
         return Option::class;

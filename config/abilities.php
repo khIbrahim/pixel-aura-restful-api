@@ -1,6 +1,6 @@
 <?php
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 
 return [
     /*

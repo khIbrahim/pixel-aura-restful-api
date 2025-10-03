@@ -2,11 +2,11 @@
 
 namespace App\Services\V1\Auth;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\StoreMember;
 use App\Support\Registry\AbilityRegistry;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class AbilityManager
 {

@@ -110,4 +110,9 @@ class Store extends Model
         return $this->is_active;
     }
 
+    public function dividePrice(): bool
+    {
+
+    }
+
 }

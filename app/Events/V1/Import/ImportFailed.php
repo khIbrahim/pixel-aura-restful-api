@@ -2,49 +2,57 @@
 
 namespace App\Events\V1\Import;
 
-use Illuminate\Broadcasting\Channel;
-use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
+use App\Events\V1\BaseEvent;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
 
-class ImportFailed implements ShouldBroadcast
+class ImportFailed extends BaseEvent
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    private string $importClass;
-    private string $errorMessage;
-    private int    $storeId;
-
-    public function __construct(string $importClass, string $errorMessage, int $storeId)
-    {
-        $this->importClass  = $importClass;
-        $this->errorMessage = $errorMessage;
-        $this->storeId      = $storeId;
+    public function __construct(
+        public string $importClass,
+        public string $errorMessage,
+        public int $storeId,
+        ?int $sender_device_id = null,
+        ?string $sender_device_type = null,
+        ?string $correlation_id = null
+    ){
+        parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
     }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('import.store.' . $this->storeId),
+            new PrivateChannel('store.' . $this->storeId . '.import'),
         ];
     }
 
     public function broadcastAs(): string
     {
-        return 'import.failed';
+        return 'ImportFailed';
     }
 
     public function broadcastWith(): array
     {
-        return [
+        $result = [
             'success'        => false,
             'message'        => $this->errorMessage,
             'importer_class' => $this->importClass,
             'error_message'  => $this->errorMessage,
             'store_id'       => $this->storeId,
         ];
+
+        $data = $this->baseBroadcastWith();
+        $data['store'] = [
+            'id' => $this->storeId,
+        ];
+
+        $data['context'] = [
+            'type' => 'Import',
+            'id'   => null
+        ];
+
+        $data['data'] = $result;
+
+        return $data;
     }
 }

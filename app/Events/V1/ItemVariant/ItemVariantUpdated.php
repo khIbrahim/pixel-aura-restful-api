@@ -12,9 +12,9 @@ final class ItemVariantUpdated extends BaseEvent
 
     public function __construct(
         public readonly ItemVariant $itemVariant,
-        public readonly ?int $sender_device_id = null,
-        public readonly ?string $sender_device_type = null,
-        public readonly ?string $correlation_id = null
+        public ?int $sender_device_id = null,
+        public ?string $sender_device_type = null,
+        public ?string $correlation_id = null
     ) {
         parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
     }

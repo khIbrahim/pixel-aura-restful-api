@@ -2,13 +2,11 @@
 
 namespace App\Models\V1\Auth;
 
-use App\Enum\DeviceType;
 use App\Models\V1\Device;
 use App\Models\V1\StoreMember;
 use Carbon\Carbon;
 use Carbon\Traits\Timestamp;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\PersonalAccessToken as SanctumToken;
 
 /**

@@ -67,4 +67,11 @@ class IngredientRepository extends BaseRepository implements IngredientRepositor
     {
         return Ingredient::class;
     }
+
+    public function getIngredientPrice(int $id): ?int
+    {
+        /** @var null|Ingredient $ingredient */
+        $ingredient = $this->find($id);
+        return $ingredient?->price_cents;
+    }
 }

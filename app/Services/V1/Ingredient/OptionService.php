@@ -6,6 +6,9 @@ use App\Contracts\V1\Option\OptionRepositoryInterface;
 use App\Contracts\V1\Option\OptionServiceInterface;
 use App\DTO\V1\Option\CreateOptionDTO;
 use App\DTO\V1\Option\UpdateOptionDTO;
+use App\Events\V1\Option\OptionCreated;
+use App\Events\V1\Option\OptionDeleted;
+use App\Events\V1\Option\OptionUpdated;
 use App\Exceptions\V1\Option\OptionCreationException;
 use App\Exceptions\V1\Option\OptionDeletionException;
 use App\Exceptions\V1\Option\OptionUpdateException;
@@ -42,6 +45,8 @@ readonly class OptionService implements OptionServiceInterface
                 'name'      => $option->name
             ]);
 
+            broadcast(new OptionCreated($option))->toOthers();
+
             return $option;
         } catch(Throwable $e){
             Log::error("Erreur lors de la création de l'option", [
@@ -76,6 +81,8 @@ readonly class OptionService implements OptionServiceInterface
                 'store_id'  => $option->store_id,
                 'name'      => $option->name
             ]);
+
+            broadcast(new OptionUpdated($option))->toOthers();
 
             return $option;
         } catch(Throwable $e){
@@ -113,6 +120,8 @@ readonly class OptionService implements OptionServiceInterface
                 'store_id'  => $option->store_id,
                 'name'      => $option->name
             ]);
+
+            broadcast(new OptionDeleted($option->id, $option->store_id, $option->store->sku))->toOthers();
 
             return $deleted;
         } catch(Throwable $e){

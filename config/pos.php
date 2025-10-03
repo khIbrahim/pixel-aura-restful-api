@@ -1,6 +1,7 @@
 <?php
 return [
     'currency' => env('POS_CURRENCY', 'DZD'),
+    'locale'   => env('POS_LOCALE', 'fr_DZ'),
     'item' => [
         'sku' => [
             'base_length'    => 24,

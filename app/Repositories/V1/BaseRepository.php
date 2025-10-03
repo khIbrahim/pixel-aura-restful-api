@@ -257,4 +257,12 @@ abstract class BaseRepository implements BaseRepositoryInterface
         });
     }
 
+    public function findByDate(string $field, string $date, array $columns = ['*']): Collection
+    {
+        return $this->query()
+            ->select($columns)
+            ->whereDate($field, $date)
+            ->get();
+    }
+
 }

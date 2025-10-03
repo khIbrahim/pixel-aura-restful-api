@@ -3,7 +3,7 @@
 namespace Database\Factories\V1;
 
 use App\Constants\V1\StoreTokenAbilities;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
 use App\Services\V1\StoreMember\StoreMemberCodeService;

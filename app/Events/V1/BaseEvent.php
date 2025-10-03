@@ -16,9 +16,9 @@ abstract class BaseEvent implements ShouldBroadcast
     public readonly string $occurred_at;
 
     public function __construct(
-        public readonly ?int    $sender_device_id   = null,
-        public readonly ?string $sender_device_type = null,
-        public readonly ?string $correlation_id     = null
+        public ?int    $sender_device_id   = null,
+        public ?string $sender_device_type = null,
+        public ?string $correlation_id     = null
     ) {
         $this->event_id    = (string) Str::uuid();
         $this->occurred_at = now()->toIso8601String();

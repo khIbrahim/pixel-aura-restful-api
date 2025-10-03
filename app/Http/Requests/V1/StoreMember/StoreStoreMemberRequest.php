@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\V1\StoreMember;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;

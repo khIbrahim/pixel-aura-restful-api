@@ -1,141 +1,1265 @@
 openapi: 3.0.3
 info:
-  title: Pixel Laravel REST API
-  description: API complète pour la gestion des magasins, catégories, articles, ingrédients et options
+  title: Pixel POS REST API
+  description: |
+    API REST complète pour système POS (Point of Sale) centré sur l'écosystème restaurant.
+
+    Supporte les bornes self-ordering, caisses enregistreuses, écrans de cuisine, et back-office.
+
+    ## Authentification
+    - Utilise Laravel Sanctum avec des tokens Bearer
+    - Chaque device/terminal a ses propres permissions (abilities)
+    - Les store members s'authentifient via PIN
+
+    ## Concepts Clés
+    - **Store**: Magasin/Restaurant
+    - **Catalog**: Version du menu avec cache optimisé
+    - **Category**: Organisation hiérarchique des produits
+    - **Item**: Produit/Plat avec variants, options et ingrédients
+    - **Option**: Personnalisation (sauces, extras, modifications)
+    - **OptionList**: Groupement d'options (ex: tailles, boissons)
+    - **Ingredient**: Composants des plats avec gestion allergènes
+    - **StoreMember**: Employé avec rôles et permissions
+
   version: 1.0.0
   contact:
-    name: Support API
-    email: support@pixel-api.com
+    name: API Support
+    email: support@pixel-pos.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: https://api.pixel-laravel.com
-    description: Production
-  - url: https://staging-api.pixel-laravel.com
-    description: Staging
-  - url: http://localhost:8000
+  - url: http://localhost:8000/api/v1
     description: Développement local
+  - url: http://127.0.0.1:8000/api/v1
+    description: Développement local (IP)
+  - url: https://api.pixel-pos.com/v1
+    description: Production
+
+security:
+  - BearerAuth: []
 
 paths:
-  # Authentication & User
-  /api/v1/me:
-    $ref: './paths/auth.yaml#/me'
+  # Authentication & User Info
+  /me:
+    get:
+      tags: [Authentication]
+      summary: Informations utilisateur authentifié
+      description: Récupère les informations du device/membre authentifié
+      responses:
+        '200':
+          description: Informations utilisateur
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
 
-  # Store Members
-  /api/v1/stores/{store}/members:
-    $ref: './paths/store-members.yaml#/store-members-list'
-  /api/v1/stores/{store}/members/{store_member}:
-    $ref: './paths/store-members.yaml#/store-members-detail'
-  /api/v1/stores/{store}/members/import:
-    $ref: './paths/store-members.yaml#/store-members-import'
-  /api/v1/stores/{store}/members/export:
-    $ref: './paths/store-members.yaml#/store-members-export'
-  /api/v1/stores/{store}/members/search:
-    $ref: './paths/store-members.yaml#/store-members-search'
-  /api/v1/store-members/{store_member}:
-    $ref: './paths/store-members.yaml#/store-member-operations'
-  /api/v1/stores/{store}/members/{store_member}/authenticate:
-    $ref: './paths/store-members.yaml#/store-member-authenticate'
-  /api/v1/members/logout:
-    $ref: './paths/store-members.yaml#/store-member-logout'
-  /api/v1/members/me:
-    $ref: './paths/store-members.yaml#/store-member-me'
+  # Catalog Endpoints
+  /catalog/compact:
+    get:
+      tags: [Catalog]
+      summary: Catalogue menu complet
+      description: |
+        Récupère le catalogue menu complet du store avec cache optimisé.
+        Supporte les ETags pour éviter les transferts inutiles.
+      parameters:
+        - name: channel
+          in: query
+          description: Canal de diffusion (all, kiosk, pos, web)
+          schema:
+            type: string
+            enum: [all, kiosk, pos, web]
+            default: all
+        - name: If-None-Match
+          in: header
+          description: ETag pour cache conditionnel
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Catalogue menu
+          headers:
+            ETag:
+              description: Version du catalogue pour cache
+              schema:
+                type: string
+            Cache-Control:
+              description: Directive de cache
+              schema:
+                type: string
+            X-Cache-Status:
+              description: Statut du cache (HIT/MISS)
+              schema:
+                type: string
+            X-Menu-Version:
+              description: Version du menu
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogResponse'
+        '304':
+          description: Non modifié (cache valide)
+        '500':
+          description: Erreur de compilation du catalogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogError'
 
-  # Categories
-  /api/v1/categories:
-    $ref: './paths/categories.yaml#/categories-list'
-  /api/v1/categories/{category}:
-    $ref: './paths/categories.yaml#/categories-detail'
-  /api/v1/categories/reorder:
-    $ref: './paths/categories.yaml#/categories-reorder'
-  /api/v1/categories/{category}/activation:
-    $ref: './paths/categories.yaml#/categories-activation'
-  /api/v1/categories/{category}/images:
-    $ref: './paths/categories.yaml#/categories-images'
-  /api/v1/categories/{category}/images/{image}:
-    $ref: './paths/categories.yaml#/categories-images-detail'
+  /catalog/refresh:
+    post:
+      tags: [Catalog]
+      summary: Rafraîchir le catalogue
+      description: Force la recompilation du catalogue et met à jour le cache
+      parameters:
+        - name: channel
+          in: query
+          description: Canal de diffusion
+          schema:
+            type: string
+            enum: [all, kiosk, pos, web]
+            default: all
+      responses:
+        '200':
+          description: Catalogue rafraîchi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogResponse'
 
-  # Items
-  /api/v1/items:
-    $ref: './paths/items.yaml#/items-list'
-  /api/v1/items/{item}:
-    $ref: './paths/items.yaml#/items-detail'
+  # Options Management
+  /options:
+    get:
+      tags: [Options]
+      summary: Liste des options
+      description: Récupère la liste paginée des options du store
+      parameters:
+        - name: per_page
+          in: query
+          description: Nombre d'éléments par page
+          schema:
+            type: integer
+            default: 25
+            minimum: 1
+            maximum: 100
+        - name: search
+          in: query
+          description: Recherche textuelle dans le nom
+          schema:
+            type: string
+        - name: price_cents
+          in: query
+          description: Filtrer par prix en centimes
+          schema:
+            type: integer
+        - name: price_cents_operator
+          in: query
+          description: Opérateur pour le filtre prix
+          schema:
+            type: string
+            enum: ['=', '>', '<', '>=', '<=']
+        - name: is_active
+          in: query
+          description: Filtrer par statut actif
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Liste des options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListResponse'
 
-  # Ingredients
-  /api/v1/ingredients:
-    $ref: './paths/ingredients.yaml#/ingredients-list'
-  /api/v1/ingredients/{ingredient}:
-    $ref: './paths/ingredients.yaml#/ingredients-detail'
+    post:
+      tags: [Options]
+      summary: Créer une option
+      description: Crée une nouvelle option (sauce, extra, modification, etc.)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOptionRequest'
+      responses:
+        '201':
+          description: Option créée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
 
-  # Options
-  /api/v1/options:
-    $ref: './paths/options.yaml#/options-list'
-  /api/v1/options/{option}:
-    $ref: './paths/options.yaml#/options-detail'
+  /options/{option}:
+    get:
+      tags: [Options]
+      summary: Détails d'une option
+      parameters:
+        - $ref: '#/components/parameters/OptionId'
+      responses:
+        '200':
+          description: Détails de l'option
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
-  # Option Lists
-  /api/v1/option-lists:
-    $ref: './paths/option-lists.yaml#/option-lists-list'
-  /api/v1/option-lists/{optionList}:
-    $ref: './paths/option-lists.yaml#/option-lists-detail'
+    put:
+      tags: [Options]
+      summary: Modifier une option
+      parameters:
+        - $ref: '#/components/parameters/OptionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOptionRequest'
+      responses:
+        '200':
+          description: Option modifiée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      tags: [Options]
+      summary: Supprimer une option
+      parameters:
+        - $ref: '#/components/parameters/OptionId'
+      responses:
+        '200':
+          description: Option supprimée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  # Items Management
+  /items:
+    post:
+      tags: [Items]
+      summary: Créer un item
+      description: Crée un nouveau produit/plat avec ses variants, options et ingrédients
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateItemRequest'
+      responses:
+        '201':
+          description: Item créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /items/{item}:
+    get:
+      tags: [Items]
+      summary: Détails d'un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Détails de l'item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+
+    put:
+      tags: [Items]
+      summary: Modifier un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateItemRequest'
+      responses:
+        '200':
+          description: Item modifié
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemResponse'
+
+    delete:
+      tags: [Items]
+      summary: Supprimer un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Item supprimé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
 
   # Item Attachments
-  /api/v1/items/{item}/ingredients:
-    $ref: './paths/item-attachments.yaml#/item-ingredients'
-  /api/v1/items/{item}/ingredients/{ingredient}:
-    $ref: './paths/item-attachments.yaml#/item-ingredients-detail'
-  /api/v1/items/{item}/options:
-    $ref: './paths/item-attachments.yaml#/item-options'
-  /api/v1/items/{item}/options/{option}:
-    $ref: './paths/item-attachments.yaml#/item-options-detail'
-  /api/v1/items/{item}/options-lists:
-    $ref: './paths/item-attachments.yaml#/item-option-lists'
-  /api/v1/items/{item}/options-lists/{option_list}:
-    $ref: './paths/item-attachments.yaml#/item-option-lists-detail'
+  /items/{item}/ingredients:
+    get:
+      tags: [Item Attachments]
+      summary: Liste des ingrédients d'un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Ingrédients de l'item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientsListResponse'
 
-  # Media
-  /api/v1/{type}/{modelBinding}/media/main:
-    $ref: './paths/media.yaml#/media-main'
-  /api/v1/{type}/{modelBinding}/media/gallery:
-    $ref: './paths/media.yaml#/media-gallery'
-  /api/v1/{type}/{modelBinding}/media/gallery/{media}:
-    $ref: './paths/media.yaml#/media-gallery-detail'
+    post:
+      tags: [Item Attachments]
+      summary: Attacher des ingrédients à un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachIngredientsRequest'
+      responses:
+        '200':
+          description: Ingrédients attachés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngredientsListResponse'
+
+  /items/{item}/options:
+    get:
+      tags: [Item Attachments]
+      summary: Liste des options d'un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Options de l'item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListResponse'
+
+    post:
+      tags: [Item Attachments]
+      summary: Attacher des options à un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachOptionsRequest'
+      responses:
+        '200':
+          description: Options attachées
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionsListResponse'
+
+  /items/{item}/option-lists:
+    get:
+      tags: [Item Attachments]
+      summary: Liste des groupes d'options d'un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      responses:
+        '200':
+          description: Groupes d'options de l'item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListsResponse'
+
+    post:
+      tags: [Item Attachments]
+      summary: Attacher des groupes d'options à un item
+      parameters:
+        - $ref: '#/components/parameters/ItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AttachOptionListsRequest'
+      responses:
+        '200':
+          description: Groupes d'options attachés
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptionListsResponse'
+
+  # Media Management
+  /{type}/{modelId}/media/main:
+    get:
+      tags: [Media]
+      summary: Image principale d'un modèle
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: Type de modèle (items, store-member, etc.)
+          schema:
+            type: string
+            enum: [items, store, store-member, device, ingredient, option, item_variant]
+        - name: modelId
+          in: path
+          required: true
+          description: ID du modèle
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image principale
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags: [Media]
+      summary: Uploader l'image principale
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [items, store, store-member, device, ingredient, option, item_variant]
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadMediaRequest'
+      responses:
+        '201':
+          description: Image uploadée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResponse'
+
+    delete:
+      tags: [Media]
+      summary: Supprimer l'image principale
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Image supprimée
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
+
+  /{type}/{modelId}/media/gallery:
+    get:
+      tags: [Media]
+      summary: Galerie d'images d'un modèle
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Galerie d'images
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaGalleryResponse'
+
+    post:
+      tags: [Media]
+      summary: Ajouter une image à la galerie
+      parameters:
+        - name: type
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: modelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadMediaRequest'
+      responses:
+        '201':
+          description: Image ajoutée à la galerie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaResponse'
 
 components:
   securitySchemes:
-    sanctum:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
       description: Token d'authentification Sanctum
 
   parameters:
-    $ref: './components/parameters.yaml'
+    OptionId:
+      name: option
+      in: path
+      required: true
+      description: ID de l'option
+      schema:
+        type: integer
+        minimum: 1
 
-  schemas:
-    $ref: './components/schemas.yaml'
+    ItemId:
+      name: item
+      in: path
+      required: true
+      description: ID de l'item
+      schema:
+        type: integer
+        minimum: 1
 
   responses:
-    $ref: './components/responses.yaml'
+    Unauthorized:
+      description: Non autorisé - Token manquant ou invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: "Unauthenticated."
 
-security:
-  - sanctum: []
+    NotFound:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            message: "Ressource non trouvée"
+
+    ValidationError:
+      description: Erreur de validation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+
+  schemas:
+    # Base Schemas
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Message d'erreur
+        error:
+          type: string
+          description: Type d'erreur
+        context:
+          type: object
+          description: Contexte additionnel
+      required:
+        - message
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "The given data was invalid."
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          example:
+            name: ["Le champ nom est obligatoire."]
+            price_cents: ["Le prix doit être un nombre entier."]
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Opération réussie"
+
+    # Authentication
+    MeResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            device:
+              $ref: '#/components/schemas/Device'
+            store:
+              $ref: '#/components/schemas/Store'
+            store_member:
+              $ref: '#/components/schemas/StoreMember'
+
+    # Core Entities
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 109
+        name:
+          type: string
+          example: "Restaurant Pixel"
+        menu_version:
+          type: integer
+          example: 5
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 25
+        name:
+          type: string
+          example: "Caisse Enregistreuse #1"
+        store_id:
+          type: integer
+          example: 109
+        is_active:
+          type: boolean
+          example: true
+
+    StoreMember:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Martin Dupont"
+        role:
+          type: string
+          enum: [owner, manager, cashier, kitchen, employee]
+          example: "cashier"
+        code:
+          type: string
+          example: "EMP-001"
+        is_active:
+          type: boolean
+          example: true
+        permissions:
+          type: array
+          items:
+            type: string
+          example: ["orders:create", "payments:process"]
+
+    Option:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Sauce Ketchup"
+        description:
+          type: string
+          nullable: true
+          example: "Sauce tomate classique"
+        price_cents:
+          type: integer
+          example: 50
+          description: "Prix en centimes (50 = 0.50€)"
+        is_active:
+          type: boolean
+          example: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 19
+        name:
+          type: string
+          example: "Pizza Margherita"
+        description:
+          type: string
+          nullable: true
+          example: "Tomate, mozzarella, basilic frais"
+        slug:
+          type: string
+          example: "pizza-margherita"
+        sku:
+          type: string
+          nullable: true
+          example: "PIZZA-MARG-001"
+        price:
+          type: number
+          format: decimal
+          example: 12.50
+        position:
+          type: integer
+          example: 1
+        is_active:
+          type: boolean
+          example: true
+        category:
+          $ref: '#/components/schemas/Category'
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemVariant'
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Pizzas"
+        slug:
+          type: string
+          example: "pizzas"
+        position:
+          type: integer
+          example: 1
+        parent_id:
+          type: integer
+          nullable: true
+          example: null
+        is_active:
+          type: boolean
+          example: true
+
+    Ingredient:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Mozzarella"
+        description:
+          type: string
+          nullable: true
+          example: "Fromage italien traditionnel"
+        allergens:
+          type: array
+          items:
+            type: string
+          example: ["lactose"]
+        is_active:
+          type: boolean
+          example: true
+
+    ItemVariant:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Taille Moyenne"
+        price:
+          type: number
+          format: decimal
+          example: 14.50
+        sku:
+          type: string
+          example: "PIZZA-MARG-M"
+        is_active:
+          type: boolean
+          example: true
+
+    # Request Schemas
+    CreateOptionRequest:
+      type: object
+      required:
+        - name
+        - price_cents
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: "Supplément Bacon"
+        description:
+          type: string
+          nullable: true
+          example: "Tranche de bacon croustillant"
+        price_cents:
+          type: integer
+          minimum: 0
+          example: 250
+          description: "Prix en centimes"
+        is_active:
+          type: boolean
+          default: true
+
+    UpdateOptionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        price_cents:
+          type: integer
+          minimum: 0
+        is_active:
+          type: boolean
+
+    CreateItemRequest:
+      type: object
+      required:
+        - name
+        - category_id
+        - price
+      properties:
+        name:
+          type: string
+          maxLength: 255
+          example: "Burger Classic"
+        description:
+          type: string
+          nullable: true
+          example: "Steak, salade, tomate, cornichons"
+        category_id:
+          type: integer
+          example: 2
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+          example: 8.90
+        sku:
+          type: string
+          nullable: true
+          example: "BURGER-CLASSIC"
+        barcode:
+          type: string
+          nullable: true
+        position:
+          type: integer
+          default: 0
+        is_active:
+          type: boolean
+          default: true
+        variants:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              price:
+                type: number
+                format: decimal
+              sku:
+                type: string
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              ingredient_id:
+                type: integer
+              name:
+                type: string
+              is_mandatory:
+                type: boolean
+        options:
+          type: array
+          items:
+            type: object
+            properties:
+              option_id:
+                type: integer
+              name:
+                type: string
+              price_cents:
+                type: integer
+
+    UpdateItemRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        price:
+          type: number
+          format: decimal
+          minimum: 0
+        is_active:
+          type: boolean
+
+    AttachOptionsRequest:
+      type: object
+      required:
+        - options
+      properties:
+        options:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: integer
+                description: "ID de l'option existante"
+              name:
+                type: string
+                description: "Nom personnalisé (optionnel)"
+              description:
+                type: string
+                description: "Description personnalisée (optionnelle)"
+              price_cents:
+                type: integer
+                description: "Prix personnalisé en centimes (optionnel)"
+              is_active:
+                type: boolean
+                description: "Statut actif personnalisé (optionnel)"
+
+    AttachIngredientsRequest:
+      type: object
+      required:
+        - ingredients
+      properties:
+        ingredients:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              is_mandatory:
+                type: boolean
+                default: false
+
+    AttachOptionListsRequest:
+      type: object
+      required:
+        - option_lists
+      properties:
+        option_lists:
+          type: array
+          items:
+            type: object
+            required:
+              - id
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              is_required:
+                type: boolean
+
+    UploadMediaRequest:
+      type: object
+      oneOf:
+        - required: [image]
+        - required: [image_url]
+      properties:
+        image:
+          type: string
+          format: binary
+          description: "Fichier image à uploader"
+        image_url:
+          type: string
+          format: uri
+          description: "URL d'une image à télécharger"
+          example: "https://example.com/image.jpg"
+
+    # Response Schemas
+    OptionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Option créée avec succès"
+        data:
+          $ref: '#/components/schemas/Option'
+
+    OptionsListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Option'
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 1
+            per_page:
+              type: integer
+              example: 25
+            total:
+              type: integer
+              example: 150
+            last_page:
+              type: integer
+              example: 6
+
+    ItemResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Item créé avec succès"
+        data:
+          $ref: '#/components/schemas/Item'
+
+    IngredientsListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ingredient'
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            item_id:
+              type: integer
+
+    OptionListsResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              description:
+                type: string
+              min_select:
+                type: integer
+              max_select:
+                type: integer
+              is_required:
+                type: boolean
+              options:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Option'
+
+    CatalogResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        version:
+          type: integer
+          example: 5
+        generated_at:
+          type: string
+          format: date-time
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              slug:
+                type: string
+              position:
+                type: integer
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+
+    CatalogError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Erreur de compilation du catalogue"
+        error:
+          type: string
+          example: "COMPILATION_FAILED"
+        context:
+          type: object
+          properties:
+            store_id:
+              type: integer
+            details:
+              type: string
+
+    MediaResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Image uploadée avec succès"
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+              example: 42
+            file_name:
+              type: string
+              example: "pizza-margherita.jpg"
+            mime_type:
+              type: string
+              example: "image/jpeg"
+            size:
+              type: integer
+              example: 245760
+            url:
+              type: string
+              format: uri
+              example: "https://storage.pixel-pos.com/stores/109/items/19-PIZZA-MARGHERITA/pizza-margherita.jpg"
+            collection_name:
+              type: string
+              example: "main"
+
+    MediaGalleryResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              file_name:
+                type: string
+              mime_type:
+                type: string
+              size:
+                type: integer
+              url:
+                type: string
+                format: uri
+              collection_name:
+                type: string
+        meta:
+          type: object
+          properties:
+            total:
+              type: integer
+            model_id:
+              type: integer
+            model_type:
+              type: string
 
 tags:
   - name: Authentication
-    description: Authentification et gestion des utilisateurs
-  - name: Store Members
-    description: Gestion des membres du magasin
-  - name: Categories
-    description: Gestion des catégories
-  - name: Items
-    description: Gestion des articles
-  - name: Ingredients
-    description: Gestion des ingrédients
+    description: Authentification et informations utilisateur
+  - name: Catalog
+    description: Gestion du catalogue menu avec cache optimisé
   - name: Options
-    description: Gestion des options
-  - name: Option Lists
-    description: Gestion des listes d'options
+    description: Gestion des options (sauces, extras, modifications)
+  - name: Items
+    description: Gestion des produits/plats
   - name: Item Attachments
-    description: Liaisons entre articles et ingrédients/options
+    description: Attachement d'options, ingrédients et groupes d'options aux items
   - name: Media
-    description: Gestion des médias et images

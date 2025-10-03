@@ -2,7 +2,7 @@
 
 namespace App\Services\V1\StoreMember;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\StoreMemberCounter;
 
 class StoreMemberCodeService

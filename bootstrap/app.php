@@ -25,6 +25,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/item_attachments.php',
             __DIR__.'/../routes/item_variants.php',
             __DIR__.'/../routes/catalog.php',
+            __DIR__.'/../routes/orders.php',
         ],
         commands: __DIR__.'/../routes/console.php',
         health: '/up',

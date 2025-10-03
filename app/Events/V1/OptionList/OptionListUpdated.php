@@ -13,9 +13,9 @@ final class OptionListUpdated extends BaseEvent
     public function __construct(
         public readonly OptionList $optionList,
         public readonly array      $changes = [],
-        public readonly ?int       $sender_device_id   = null,
-        public readonly ?string    $sender_device_type = null,
-        public readonly ?string    $correlation_id     = null
+        ?int       $sender_device_id   = null,
+        ?string    $sender_device_type = null,
+        ?string    $correlation_id     = null
     ) {
         parent::__construct($this->sender_device_id, $this->sender_device_type, $this->correlation_id);
     }

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Device;
 use Laravel\Sanctum\HasApiTokens;
 use Tests\TestCase;

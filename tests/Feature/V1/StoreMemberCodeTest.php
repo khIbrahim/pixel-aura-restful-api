@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\V1;
 
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
 use App\Services\V1\StoreMember\StoreMemberCodeService;

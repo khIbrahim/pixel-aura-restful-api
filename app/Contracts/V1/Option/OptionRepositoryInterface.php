@@ -17,4 +17,6 @@ interface OptionRepositoryInterface extends BaseRepositoryInterface
 
     public function findOptionsByIds(array $ids): Collection;
 
+    public function getOptionPrice(int $id): ?int;
+
 }

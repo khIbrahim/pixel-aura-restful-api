@@ -1,6 +1,6 @@
 <?php
 
-use App\Enum\PricedValType;
+use App\Enum\V1\PricedValType;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

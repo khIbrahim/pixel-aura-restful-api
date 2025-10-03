@@ -15,17 +15,18 @@ use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
- * @property int         $id Identifiant unique de l'option
- * @property int         $store_id Identifiant du magasin auquel l'option appartient
- * @property string      $name Nom de l'option
- * @property null|string $description Description de l'option
- * @property int         $price_cents Prix de l'option en centimes
- * @property bool        $is_active Indique si l'option est active et disponible
- * @property int         $option_list_id Identifiant de la liste d'options associée
+ * @property int         $id
+ * @property int         $store_id
+ * @property string      $name
+ * @property null|string $description
+ * @property int         $price_cents
+ * @property bool        $is_active
+ * @property int         $option_list_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Store       $store
  * @property OptionList  $list
+ * @property int         $preparation_time_minutes
  */
 class Option extends Model implements HasMedia, DefinesMediaPath
 {
@@ -41,13 +42,15 @@ class Option extends Model implements HasMedia, DefinesMediaPath
         'price_cents',
         'is_active',
         'option_list_id',
+        'preparation_time_minutes'
     ];
 
     protected $casts = [
-        'price_cents'    => 'integer',
-        'is_active'      => 'boolean',
-        'store_id'       => 'integer',
-        'option_list_id' => 'integer',
+        'price_cents'              => 'integer',
+        'is_active'                => 'boolean',
+        'store_id'                 => 'integer',
+        'option_list_id'           => 'integer',
+        'preparation_time_minutes' => 'integer',
     ];
 
     public function items(): BelongsToMany

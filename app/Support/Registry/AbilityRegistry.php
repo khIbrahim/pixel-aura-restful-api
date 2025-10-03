@@ -2,12 +2,12 @@
 
 namespace App\Support\Registry;
 
+use App\Enum\V1\StoreMemberRole;
 use App\Exceptions\V1\Ability\EmptyAbilitiesConfigurationException;
 use App\Exceptions\V1\Ability\UnknownAbilityException;
 use App\Exceptions\V1\Config\MissingConfigurationKeyException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use App\Enum\StoreMemberRole;
 
 class AbilityRegistry
 {

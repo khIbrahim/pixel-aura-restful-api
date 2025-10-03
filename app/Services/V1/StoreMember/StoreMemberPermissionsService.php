@@ -3,7 +3,7 @@
 namespace App\Services\V1\StoreMember;
 
 use App\Constants\V1\StoreTokenAbilities;
-use App\Enum\StoreMemberRole;
+use App\Enum\V1\StoreMemberRole;
 
 final class StoreMemberPermissionsService
 {
