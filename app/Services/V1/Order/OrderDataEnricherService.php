@@ -21,7 +21,7 @@ class OrderDataEnricherService
 
         $data->items = array_map(
             /** @throws OrderCreationException */
-            fn(OrderItemData $itemData) => $this->enrichItem($itemData, $loaded), $data->items
+            fn($itemData) => $this->enrichItem($itemData, $loaded), $data->items
         );
 
         return $data;
@@ -32,12 +32,12 @@ class OrderDataEnricherService
         $itemIds       = collect($data->items)->pluck('item_id')->unique();
         $variantIds    = collect($data->items)->pluck('variant_id')->unique()->filter();
         $optionIds     = collect($data->items)
-            ->flatMap(function(OrderItemData $itemData){
-                return array_map(fn(OrderOptionData $optionData) => $optionData->option_id, $itemData->options);
+            ->flatMap(function($itemData){
+                return array_map(fn($optionData) => $optionData->option_id, $itemData->options);
             })->unique();
 
         $ingredientIds = collect($data->items)
-            ->flatMap(function(OrderItemData $itemData){
+            ->flatMap(function($itemData){
                 return array_map(fn($modification) => $modification->ingredient_id, $itemData->modifications);
             })->unique();
 
@@ -48,11 +48,12 @@ class OrderDataEnricherService
                 ->get()
                 ->keyBy('id'),
             'options'     => $optionIds->isEmpty() ? collect() : Option::query()
-                ->whereIn('id', $optionIds)
+                ->whereIn('id', $optionIds->toArray())
                 ->get()
                 ->keyBy('id'),
+
             'ingredients' => $ingredientIds->isEmpty() ? collect() : Ingredient::query()
-                ->whereIn('id', $ingredientIds)
+                ->whereIn('id', $ingredientIds->toArray())
                 ->get()
                 ->keyBy('id')
         ];
@@ -77,8 +78,8 @@ class OrderDataEnricherService
             }
         }
 
-        $enrichedOptions       = array_map(fn(OrderOptionData $optionData) => $this->enrichOption($optionData, $loaded['options']), $itemData->options);
-        $enrichedModifications = array_map(fn(OrderIngredientData $modData) => $this->enrichIngredient($modData, $loaded['ingredients']), $itemData->modifications);
+        $enrichedOptions       = array_map(fn($optionData) => $this->enrichOption($optionData, $loaded['options']), $itemData->options);
+        $enrichedModifications = array_map(fn($modData) => $this->enrichIngredient($modData, $loaded['ingredients']), $itemData->modifications);
 
         return new OrderItemData(
             item_id: $itemData->item_id,

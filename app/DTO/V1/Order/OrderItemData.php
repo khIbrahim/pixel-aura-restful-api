@@ -63,6 +63,7 @@ final class OrderItemData implements Arrayable
             'quantity'                 => $this->quantity,
             'final_total_cents'        => $this->pricing?->final_total_cents,
             'special_instructions'     => $this->special_instructions,
+            'preparation_time_minutes' => $this->item?->preparation_time_minutes ?? 0
         ];
     }
 }

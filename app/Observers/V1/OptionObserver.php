@@ -2,6 +2,7 @@
 
 namespace App\Observers\V1;
 
+use App\Models\V1\Option;
 use App\Services\V1\Catalog\CatalogVersionManager;
 
 class OptionObserver
@@ -19,7 +20,7 @@ class OptionObserver
         private readonly CatalogVersionManager $versionManager
     ){}
 
-    public function created($option): void
+    public function created(Option $option): void
     {
         $this->versionManager->incrementVersion($option->store, "Option créée", [
             'option_id'   => $option->id,
@@ -27,7 +28,7 @@ class OptionObserver
         ]);
     }
 
-    public function updated($option): void
+    public function updated(Option $option): void
     {
         $changedFields  = $option->getChanges();
         $affectedFields = array_intersect(self::CATALOG_AFFECTING_FIELDS, $changedFields);
@@ -44,7 +45,7 @@ class OptionObserver
         ]);
     }
 
-    public function deleted($option): void
+    public function deleted(Option $option): void
     {
         $this->versionManager->incrementVersion($option->store, "Option supprimée", [
             'option_id'   => $option->id,

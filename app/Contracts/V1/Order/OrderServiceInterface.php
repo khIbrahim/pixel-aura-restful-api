@@ -14,4 +14,6 @@ interface OrderServiceInterface
      */
     public function create(OrderData $data): Order;
 
+    public function updateEstimatedTime(Order $order): Order;
+
 }

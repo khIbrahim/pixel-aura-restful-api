@@ -45,4 +45,11 @@ class OrderController extends Controller
         ]);
     }
 
+    public function getPreparationStatus(Order $order): JsonResponse
+    {
+        return response()->json([
+            'data' => $order->getPreparationData()
+        ]);
+    }
+
 }

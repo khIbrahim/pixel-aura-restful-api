@@ -42,11 +42,7 @@ class OrderResource extends JsonResource
                 0
             ),
 
-            'preparation' => [
-                'progress_percentage' => $this->getPreparationProgress(),
-                'estimated_ready_at'  => $this->when($this->getEstimatedReadyTime() !== null, fn() => $this->getEstimatedReadyTime()?->toIso8601String()),
-                'total_time_minutes' => $this->when($this->relationLoaded('items'), fn() => $this->items->sum(fn($item) => $item->getPreparationTime() * $item->quantity)),
-            ],
+            'preparation' => $this->getPreparationData(),
 
             'device'  => new DeviceResource($this->whenLoaded('device')),
             'creator' => new StoreMemberResource($this->whenLoaded('creator')),

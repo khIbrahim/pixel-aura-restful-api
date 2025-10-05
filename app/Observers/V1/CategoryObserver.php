@@ -5,7 +5,7 @@ namespace App\Observers\V1;
 use App\Models\V1\Category;
 use App\Services\V1\Catalog\CatalogVersionManager;
 
-class CategoryObserver
+class CategoryObserver extends BaseObserver
 {
 
     private const array CATALOG_AFFECTED_FIELDS = [

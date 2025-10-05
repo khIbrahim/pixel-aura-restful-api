@@ -58,7 +58,9 @@ return new class extends Migration
             $table->timestamp('ready_at')->nullable();
             $table->timestamp('completed_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
-            $table->timestamp('refunded_at')->nullable();
+
+            $table->integer('estimated_preparation_minutes')->nullable();
+            $table->timestamp('excepted_ready_at')->nullable();
 
             $table->json('metadata')->nullable();
             $table->text('special_instructions')->nullable();

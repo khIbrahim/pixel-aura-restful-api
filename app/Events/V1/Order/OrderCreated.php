@@ -39,8 +39,9 @@ final class OrderCreated extends BaseEvent
                 'sku' => $this->order->store->sku,
             ],
             'subject' => [
-                'type' => 'Order',
-                'id'   => $this->order->id,
+                'type'   => 'Order',
+                'id'     => $this->order->id,
+                'number' => $this->order->number,
             ],
             'data'  => new OrderResource($this->order)
         ]);

@@ -46,6 +46,8 @@ use Illuminate\Support\Collection;
  * @property DeliveryInfo|null     $delivery
  * @property DineInInfo|null       $dine_in
  * @property PickupInfo|null       $pickup
+ * @property int|null              $estimated_preparation_minutes
+ * @property Carbon|null           $excepted_ready_at
  */
 class Order extends Model
 {
@@ -76,21 +78,24 @@ class Order extends Model
         'delivery',
         'dine_in',
         'pickup',
+        'estimated_preparation_minutes',
+        'excepted_ready_at'
     ];
 
     protected $casts = [
-        'confirmed_at' => 'datetime',
-        'preparing_at' => 'datetime',
-        'ready_at'     => 'datetime',
-        'completed_at' => 'datetime',
-        'cancelled_at' => 'datetime',
-        'metadata'     => 'array',
-        'channel'      => OrderChannel::class,
-        'service_type' => OrderServiceType::class,
-        'status'       => OrderStatus::class,
-        'delivery'     => DeliveryInfo::class,
-        'dine_in'      => DineInInfo::class,
-        'pickup'       => PickupInfo::class
+        'confirmed_at'      => 'datetime',
+        'preparing_at'      => 'datetime',
+        'ready_at'          => 'datetime',
+        'completed_at'      => 'datetime',
+        'cancelled_at'      => 'datetime',
+        'metadata'          => 'array',
+        'channel'           => OrderChannel::class,
+        'service_type'      => OrderServiceType::class,
+        'status'            => OrderStatus::class,
+        'delivery'          => DeliveryInfo::class,
+        'dine_in'           => DineInInfo::class,
+        'pickup'            => PickupInfo::class,
+        'excepted_ready_at' => 'datetime',
     ];
 
     public function device(): BelongsTo
@@ -113,30 +118,24 @@ class Order extends Model
         return $this->belongsTo(Store::class);
     }
 
-    public function getDisplayTotal(bool $divide = true): string
+    public function getPreparationData(): array
     {
-        return number_format($divide ? $this->total_cents / 100 : $this->total_cents, 2) . ' ' . $this->currency;
-    }
+        $elapsedSeconds = $this->confirmed_at ? now()->diffInSeconds($this->confirmed_at) : 0;
+        $elapsedMinutes = $elapsedSeconds / 60;
 
-    public function getEstimatedReadyTime(): ?Carbon
-    {
-        if ($this->status === OrderStatus::Confirmed || $this->status === OrderStatus::Preparing) {
-            $prepTime = $this->items->sum(function (OrderItem $item){
-                return $item->getPreparationTime() * $item->quantity;
-            });
+        $remainingSeconds = $this->excepted_ready_at ? $this->excepted_ready_at->diffInSeconds(now()) : 0;
+        $remainingMinutes = $remainingSeconds / 60;
 
-            return $this->confirmed_at?->addMinutes($prepTime);
+        if ($this->excepted_ready_at && $this->excepted_ready_at->isPast()) {
+            $remainingMinutes = 0;
         }
 
-        return null;
+        return [
+            'estimated_minutes'   => $this->estimated_preparation_minutes,
+            'excepted_ready_at'   => $this->when($this->excepted_ready_at !== null, fn() => $this->excepted_ready_at?->toIso8601String()),
+            'elapsed_minutes'     => round(-1 * $elapsedMinutes, 2),
+            'remaining_time'      => $this->excepted_ready_at ? round(-1 * $remainingMinutes, 2) : null,
+        ];
     }
 
-    public function getPreparationProgress(): int
-    {
-        return match($this->status) {
-            OrderStatus::Preparing => 60,
-            OrderStatus::Ready     => 100,
-            default => 0
-        };
-    }
 }

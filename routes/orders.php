@@ -11,4 +11,7 @@ Route::prefix('v1/orders')
 
         Route::get('/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
+
+        Route::get('/{order}/prep-status', [OrderController::class, 'getPreparationStatus'])
+            ->name('orders.prep-status');
     });

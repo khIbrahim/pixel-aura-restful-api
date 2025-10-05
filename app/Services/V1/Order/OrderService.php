@@ -5,8 +5,11 @@ namespace App\Services\V1\Order;
 use App\Contracts\V1\Order\OrderRepositoryInterface;
 use App\Contracts\V1\Order\OrderServiceInterface;
 use App\DTO\V1\Order\OrderData;
+use App\Enum\V1\Order\OrderStatus;
 use App\Events\V1\Order\OrderCreated;
+use App\Events\V1\Order\OrderStatusChanged;
 use App\Exceptions\V1\Order\OrderCreationException;
+use App\Exceptions\V1\Order\OrderUpdateException;
 use App\Models\V1\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -19,8 +22,9 @@ readonly class OrderService implements OrderServiceInterface
         private OrderDataEnricherService    $enricher,
         private OrderValidationService      $validationService,
         private OrderPriceCalculatorService $calculatorService,
-        private OrderRepositoryInterface    $orderRepository,
-        private OrderNumberService          $orderNumberService
+        private OrderRepositoryInterface    $repository,
+        private OrderNumberService          $numberService,
+        private OrderPreparationService     $preparationService
     ){}
 
     /**
@@ -35,9 +39,9 @@ readonly class OrderService implements OrderServiceInterface
                 $data = $this->enricher->enrich($data);
                 $this->validationService->validate($data);
                 $pricedData         = $this->calculatorService->calculate($data);
-                $pricedData->number = $this->orderNumberService->generate($pricedData->store_id);
+                $pricedData->number = $this->numberService->generate($pricedData->store_id);
 
-                $order = $this->orderRepository->createOrder($pricedData);
+                $order = $this->repository->createOrder($pricedData);
 
                 Log::info("Commande créée avec succès", [
                     'order_id'     => $order->id,
@@ -62,4 +66,54 @@ readonly class OrderService implements OrderServiceInterface
         }
     }
 
+    /**
+     * @throws OrderUpdateException
+     */
+    public function updateStatus(Order $order, OrderStatus|string $newStatus): Order
+    {
+        if(is_string($newStatus) && ! OrderStatus::tryFrom($newStatus)){
+            throw OrderUpdateException::invalidStatus($newStatus);
+        }
+
+        if($newStatus instanceof OrderStatus){
+            $newStatus = $newStatus->value;
+        }
+
+        return DB::transaction(function () use ($order, $newStatus){
+            $oldStatus = $order->status;
+            $timestamp = match($newStatus) {
+                OrderStatus::Confirmed->value  => 'confirmed_at',
+                OrderStatus::Ready->value      => 'ready_at',
+                OrderStatus::Preparing->value  => 'preparing_at',
+                OrderStatus::Completed->value  => 'completed_at',
+                OrderStatus::Cancelled->value  => 'cancelled_at',
+            };
+
+            /** @var Order $order */
+            $order = $this->repository->update($order, [
+                'status'   => $newStatus,
+                $timestamp => now()
+            ]);
+
+            broadcast(new OrderStatusChanged(
+                order: $order,
+                oldStatus: $oldStatus,
+                newStatus: OrderStatus::from($newStatus),
+                preparationData: $order->getPreparationData()
+            ))->toOthers();
+
+            return $order;
+        });
+    }
+
+    public function updateEstimatedTime(Order $order): Order
+    {
+        $prepTime = $this->preparationService->calculatePreparationTime($order);
+
+        /** @var Order */
+        return $this->repository->update($order, [
+            'estimated_preparation_minutes' => $prepTime,
+            'excepted_ready_at'             => now()->addMinutes($prepTime)
+        ]);
+    }
 }

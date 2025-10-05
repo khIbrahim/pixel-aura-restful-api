@@ -32,12 +32,13 @@ final class OrderOptionData implements Castable, Arrayable
     public function toArray(): array
     {
         return [
-            'option_id'         => $this->option_id,
-            'quantity'          => $this->quantity,
-            'name'              => $this->option?->name ?? null,
-            'description'       => $this->option?->description ?? null,
-            'unit_price'        => $this->option?->price_cents ?? null,
-            'total_price_cents' => $this->option !== null ? $this->getTotalPriceCents() : null
+            'option_id'                => $this->option_id,
+            'quantity'                 => $this->quantity,
+            'name'                     => $this->option?->name ?? null,
+            'description'              => $this->option?->description ?? null,
+            'unit_price'               => $this->option?->price_cents ?? null,
+            'total_price_cents'        => $this->option !== null ? $this->getTotalPriceCents() : null,
+            'preparation_time_minutes' => $this->option?->preparation_time_minutes ?? null,
         ];
     }
 

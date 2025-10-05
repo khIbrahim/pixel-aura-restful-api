@@ -18,5 +18,28 @@ return [
                 'icon'      => ['fit' => 'crop',    'width' => 64,   'height'   => 64],
             ]
         ],
+    ],
+    'order' => [
+        'preparation_time' => [
+            'default_minutes' => 15,
+            'rush_hour' => [
+                'enabled'          => true,
+                'start'            => '11:00',
+                'end'              => '14:00',
+                'days'             => [1, 2, 3, 4, 5],
+                'extra_multiplier' => 1.5
+            ],
+            'bulk_order' => [
+                'enabled'       => true,
+                'threshold'     => 10,
+                'extra_minutes' => 10
+            ],
+            'kitchen_load' => [
+                'enabled'          => true,
+                'check_interval'   => 15, // en minutes
+                'high_load_orders' => 5,  // nombre d'ordres en cours pour considérer une charge élevée
+                'extra_minutes'    => 10
+            ]
+        ]
     ]
 ];

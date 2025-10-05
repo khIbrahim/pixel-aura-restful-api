@@ -9,6 +9,7 @@ use App\Models\V1\Option;
 use App\Observers\V1\CategoryObserver;
 use App\Observers\V1\ItemObserver;
 use App\Observers\V1\ItemVariantObserver;
+use App\Observers\V1\OptionObserver;
 use App\Repositories\V1\Store\StoreRepository;
 use App\Services\V1\Catalog\CatalogCacheService;
 use App\Services\V1\Catalog\CatalogService;
@@ -26,16 +27,14 @@ class CatalogServiceProvider extends ServiceProvider
         $this->app->bind(CatalogService::class, fn($app) => new CatalogService(
             new CompactFormatter()
         ));
-
-        Item::observe(ItemObserver::class);
-        Category::observe(CategoryObserver::class);
-        ItemVariant::observe(ItemVariantObserver::class);
-        Option::observe(Option::class);
     }
 
 
     public function boot(): void
     {
-        //
+        Item::observe(ItemObserver::class);
+        Category::observe(CategoryObserver::class);
+        ItemVariant::observe(ItemVariantObserver::class);
+        Option::observe(OptionObserver::class);
     }
 }
