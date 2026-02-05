@@ -19,7 +19,8 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         $cacheKey = "store:$storeId:category:max_position";
 
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($storeId) {
-            return (int) Category::query()->where('store_id', $storeId)->max('position');
+            return (int) Category::query()->where('store_id', $storeId)
+                ->max('position');
         });
     }
 
@@ -58,6 +59,12 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($sku, $storeId) {
             return Category::query()->where('sku', $sku)->where('store_id', $storeId)->first();
         });
+    }
+
+    public function clearMaxPositionCache(int $storeId): void
+    {
+        $cacheKey = "store:$storeId:category:max_position";
+        Cache::forget($cacheKey);
     }
 
     public function shiftRangeUp(int $storeId, int $fromInclusive, int $toInclusive): void

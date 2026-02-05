@@ -25,5 +25,7 @@ interface CategoryRepositoryInterface extends BaseRepositoryInterface
 
     public function bulkSetPositions(array $idPositionMap, int $storeId): void; // id => position
 
+    public function clearMaxPositionCache(int $storeId): void;
+
     public function list(int $storeId, array $filters = [], int $perPage = 25): LengthAwarePaginator;
 }

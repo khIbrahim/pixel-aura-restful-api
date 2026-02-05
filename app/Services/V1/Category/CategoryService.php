@@ -59,6 +59,9 @@ readonly class CategoryService implements CategoryServiceInterface
 
                 /** @var Category $category */
                 $category = $this->categoryRepository->create($dto->toArray());
+
+                $this->categoryRepository->clearMaxPositionCache($data->store_id);
+
                 broadcast(new CategoryCreated($category))->toOthers();
 
                 return $category;
@@ -114,9 +117,13 @@ readonly class CategoryService implements CategoryServiceInterface
                     $this->repositionSingle($category, $data->position);
                     $attributes['position'] = $data->position;
                 }
-
                 if (! empty($attributes)) {
                     $this->categoryRepository->update($category, $attributes);
+
+                }
+
+                if (isset($attributes['position'])) {
+                    $this->categoryRepository->clearMaxPositionCache($category->store_id);
                 }
 
                 $category = $category->refresh();
