@@ -37,9 +37,4 @@ class Ability extends Facade
         return array_map(fn($action) => $registry->canPerformAction($domain, $action), $actions);
     }
 
-    public const array CRUD       = ['read', 'create', 'update', 'delete'];
-    public const array READ_WRITE = ['read', 'create', 'update'];
-    public const array READ_ONLY  = ['read'];
-    public const array MANAGEMENT = ['read', 'create', 'update', 'delete', 'manage'];
-
 }

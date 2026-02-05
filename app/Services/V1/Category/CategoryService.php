@@ -17,6 +17,7 @@ use App\Exceptions\V1\Category\PositionDuplicateException;
 use App\Models\V1\Category;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 readonly class CategoryService implements CategoryServiceInterface
@@ -41,7 +42,7 @@ readonly class CategoryService implements CategoryServiceInterface
                     throw CategoryCreationException::positionDuplicate($position);
                 }
 
-                if ($this->categoryRepository->find($data->parent_id) === null && $data->parent_id !== null) {
+                if ($data->parent_id !== null && $this->categoryRepository->find($data->parent_id) === null) {
                     throw CategoryCreationException::invalidParent($data->parent_id);
                 }
 
@@ -65,6 +66,11 @@ readonly class CategoryService implements CategoryServiceInterface
                 if ($e instanceof CategoryCreationException) {
                     throw $e;
                 }
+
+                Log::error('Erreur création catégorie : ' . $e->getMessage(), [
+                    'exception' => get_class($e),
+                    'trace' => $e->getTraceAsString()
+                ]);
 
                 throw CategoryCreationException::default($e);
             }

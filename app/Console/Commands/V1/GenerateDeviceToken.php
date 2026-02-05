@@ -14,7 +14,7 @@ use Symfony\Component\Console\Command\Command as CommandAlias;
 
 class GenerateDeviceToken extends Command
 {
-    protected $signature = 'device:token';
+    protected $signature   = 'device:token';
 
     protected $description = 'Générer un device token pour un store';
 

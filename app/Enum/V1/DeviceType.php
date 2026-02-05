@@ -57,6 +57,8 @@ enum DeviceType: string
                 A::PRINTER_READ, A::DEVICE_SYNC,
                 A::CUSTOMER_CREATE, // opt-in fidélité au kiosk
                 A::COUPON_APPLY,
+                A::MEMBERS_AUTH, A::MEMBERS_LOGOUT, A::MEMBERS_READ,
+                A::CATEGORY_READ
             ],
             self::Kds => [
                 A::KDS_READ, A::KDS_UPDATE, A::KDS_ROUTE_RULES,
