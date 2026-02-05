@@ -2,9 +2,9 @@
 
 namespace App\DTO\V1\Order;
 
-use App\DTO\V1\Order\ServiceType\DeliveryInfo;
-use App\DTO\V1\Order\ServiceType\DineInInfo;
-use App\DTO\V1\Order\ServiceType\PickupInfo;
+use App\Casts\V1\ServiceType\DeliveryInfo;
+use App\Casts\V1\ServiceType\DineInInfo;
+use App\Casts\V1\ServiceType\PickupInfo;
 use App\Enum\V1\Order\OrderChannel;
 use App\Enum\V1\Order\OrderServiceType;
 use App\Enum\V1\Order\OrderStatus;

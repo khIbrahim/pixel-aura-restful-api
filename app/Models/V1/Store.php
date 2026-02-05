@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int         $id
@@ -108,11 +109,6 @@ class Store extends Model
     public function active(): bool
     {
         return $this->is_active;
-    }
-
-    public function dividePrice(): bool
-    {
-
     }
 
 }

@@ -2,7 +2,7 @@
 
 namespace App\Enum\V1;
 
-use App\Exceptions\InvalidRolePrefixException;
+use App\Exceptions\V1\StoreMember\InvalidRolePrefixException;
 
 enum StoreMemberRole: string
 {

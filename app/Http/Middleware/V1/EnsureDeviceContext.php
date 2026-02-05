@@ -3,6 +3,7 @@
 namespace App\Http\Middleware\V1;
 
 use App\Models\V1\Device;
+use App\Models\V1\Store;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -13,6 +14,7 @@ class EnsureDeviceContext
 
     public function handle(Request $request, Closure $next): Response
     {
+        /** @var Store|null $store  */
         $store  = $request->attributes->get('store');
         /** @var Device $device */
         $device = $request->attributes->get('device');

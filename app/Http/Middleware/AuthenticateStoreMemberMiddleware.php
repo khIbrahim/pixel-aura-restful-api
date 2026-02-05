@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Contracts\V1\Auth\StoreMemberAuthServiceInterface;
 use App\Models\V1\Auth\PersonalAccessToken;
-use App\Models\V1\Device;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,11 +34,6 @@ readonly class AuthenticateStoreMemberMiddleware
         }
 
         $storeMember = $personalAccessToken->storeMember;
-        $device      = $personalAccessToken->tokenable;
-
-        if (! $storeMember || ! $device instanceof Device) {
-            return response()->json(['message' => 'Données d\'authentification invalides'], Response::HTTP_UNAUTHORIZED);
-        }
 
         if (! $storeMember->isActive()) {
             return response()->json(['message' => 'Compte désactivé'], Response::HTTP_FORBIDDEN);
@@ -50,7 +44,7 @@ readonly class AuthenticateStoreMemberMiddleware
         }
 
         $request->attributes->set('store_member', $storeMember);
-        $request->attributes->set('device', $device);
+        $request->attributes->set('store', $storeMember->store_id);
 
         return $next($request);
     }

@@ -60,6 +60,10 @@ class AppServiceProvider extends ServiceProvider
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         Sanctum::authenticateAccessTokensUsing(function (PersonalAccessToken $token, bool $isValid) {
+            if($token->isExpired()){
+                return false;
+            }
+
             if (! $isValid) {
                 return false;
             }
@@ -96,8 +100,6 @@ class AppServiceProvider extends ServiceProvider
 
             app('request')->attributes->set('store', $store);
             app('request')->attributes->set('device', $device);
-
-            app('request')->attributes->set('device_key', 'dev:'.$device->id);
 
             return true;
         });

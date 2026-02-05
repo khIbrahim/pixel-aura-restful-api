@@ -3,6 +3,7 @@
 namespace App\Models\V1\Auth;
 
 use App\Models\V1\Device;
+use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
 use Carbon\Carbon;
 use Carbon\Traits\Timestamp;
@@ -14,13 +15,12 @@ use Laravel\Sanctum\PersonalAccessToken as SanctumToken;
  * @property array       $abilities
  * @property int         $store_id
  * @property int         $fingerprint
- * @property int         $device_id
  * @property null|int    $store_member_id
  * @property null|Carbon $expires_at
  * @property null|Carbon $last_used_at
  * @property null|Carbon $created_at
  * @property bool        $revoked
- * @property Device      $tokenable
+ * @property Store       $tokenable
  * @property StoreMember $storeMember
  */
 class PersonalAccessToken extends SanctumToken
@@ -34,7 +34,6 @@ class PersonalAccessToken extends SanctumToken
         'expires_at',
         'tokenable_id',
         'tokenable_type',
-        'device_id',
         'fingerprint',
         'store_id',
         'store_member_id',
@@ -56,6 +55,16 @@ class PersonalAccessToken extends SanctumToken
     public function storeMember(): BelongsTo
     {
         return $this->belongsTo(StoreMember::class);
+    }
+
+    public function tokenable(): BelongsTo
+    {
+        return $this->belongsTo(Device::class, 'tokenable_id');
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->expires_at !== null && Carbon::now()->greaterThan($this->expires_at);
     }
 
 }

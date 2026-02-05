@@ -8,13 +8,6 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')
     ->middleware(['auth:sanctum', 'device.ctx', 'device.throttle:per-device', 'correlate'])
     ->group(function () {
-        /*
-        |--------------------------------------------------------------------------
-        | Store Members - Ressources standards
-        |--------------------------------------------------------------------------
-        | Routes principales pour la gestion des membres
-        |
-        */
         Route::apiResource('stores.members', StoreMembersController::class)
             ->parameters(['members' => 'store_member', 'stores' => 'store'])
             ->whereNumber(['store', 'store_member'])

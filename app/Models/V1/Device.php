@@ -53,7 +53,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
  */
 class Device extends Model
 {
-    use HasFactory, SoftDeletes, HasApiTokens, LogsActivity, Timestamp;
+    use HasFactory, SoftDeletes, LogsActivity, Timestamp, HasApiTokens;
 
     protected $table = 'devices';
 
@@ -117,11 +117,6 @@ class Device extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
-    }
-
-    public function transactions(): HasMany
-    {
-        return $this->hasMany(Transaction::class);
     }
 
     public function deviceLogs(): MorphMany
@@ -215,8 +210,6 @@ class Device extends Model
             'blocked_reason' => $reason,
             'blocked_at' => now(),
         ]);
-
-        $this->tokens()->delete();
     }
 
     public function unblock(): void

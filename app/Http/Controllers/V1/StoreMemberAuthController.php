@@ -46,7 +46,7 @@ class StoreMemberAuthController extends Controller
      */
     public function authenticate(Store $store, AuthenticateStoreMemberRequest $request): JsonResponse
     {
-        $data    = AuthenticateStoreMemberDTO::fromRequest($request->validated());
+        $data   = AuthenticateStoreMemberDTO::fromRequest($request->validated());
         $device = $request->attributes->get('device');
         $result = $this->storeMemberAuthService->authenticate($store->id, $data->code, $data->pin, $device);
 

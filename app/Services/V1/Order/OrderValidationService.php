@@ -2,13 +2,13 @@
 
 namespace App\Services\V1\Order;
 
+use App\Casts\V1\ServiceType\DeliveryInfo;
+use App\Casts\V1\ServiceType\DineInInfo;
+use App\Casts\V1\ServiceType\PickupInfo;
 use App\DTO\V1\Order\OrderData;
-use App\DTO\V1\Order\OrderItemData;
 use App\DTO\V1\Order\OrderIngredientData;
+use App\DTO\V1\Order\OrderItemData;
 use App\DTO\V1\Order\OrderOptionData;
-use App\DTO\V1\Order\ServiceType\DeliveryInfo;
-use App\DTO\V1\Order\ServiceType\DineInInfo;
-use App\DTO\V1\Order\ServiceType\PickupInfo;
 use App\Enum\V1\Order\OrderIngredientAction;
 use App\Enum\V1\Order\OrderServiceType;
 use App\Exceptions\V1\Order\OrderCreationException;

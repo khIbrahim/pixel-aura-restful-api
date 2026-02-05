@@ -4,6 +4,7 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Providers\CatalogServiceProvider::class,
     App\Providers\V1\CategoryServiceProvider::class,
+    App\Providers\V1\DiscountServiceProvider::class,
     App\Providers\V1\ItemServiceProvider::class,
     App\Providers\V1\OrderServiceProvider::class,
     App\Providers\V1\RateLimitServiceProvider::class,
