@@ -63,6 +63,7 @@ abstract class BaseRepository implements BaseRepositoryInterface
     public function create(array $attributes): Model
     {
         return DB::transaction(function () use ($attributes) {
+            var_dump($attributes['sku']);
             return $this->query()->create($attributes);
         });
     }

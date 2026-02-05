@@ -43,6 +43,7 @@ final readonly class CreateCategoryDTO implements Arrayable
             'is_active'   => $this->is_active,
             'store_id'    => $this->store_id,
             'slug'        => $this->sku,
+            'sku'         => $this->sku
         ];
     }
 }
