@@ -26,6 +26,7 @@ Route::bind('modelBinding', function ($value, $route) {
         'ingredient'   => Ingredient::class,
         'option'       => Option::class,
         'item_variant' => ItemVariant::class,
+        'category'     => Category::class,
     ];
 
     if (! isset($map[$type])) {

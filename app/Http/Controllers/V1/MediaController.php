@@ -36,7 +36,7 @@ class MediaController extends Controller
         $data  = $request->validated();
         $image = $data['image'] ?? $data['image_url'];
 
-        $mediaResult = $this->mediaManager->replaceImage($model, $image, MediaUploadOptions::main());
+        $mediaResult = $this->mediaManager->uploadImage($model, $image, MediaUploadOptions::main());
         if($mediaResult->isFailure()){
             return response()->json([
                 'message' => 'Échec du téléchargement de l\'image principale.',

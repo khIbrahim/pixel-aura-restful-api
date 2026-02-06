@@ -31,17 +31,12 @@ readonly class MediaManager implements MediaManagerInterface
             $processedFile = $this->imageProcessor->process($file);
 
             assert($model instanceof HasMedia);
-            $mediaAdder = $model->addMedia($processedFile)
-                ->withCustomProperties(array_merge($options->customProperties, ['visibility' => 'public']));
-
-            $mediaAdder->toMediaCollection($options->collection, $options->disk ?? 's3');
-
+            $media = $model->addMedia($processedFile)
+                ->withCustomProperties(array_merge($options->customProperties, ['visibility' => 'public']))
+                ->toMediaCollection($options->collection, $options->disk ?? 's3');
             if (is_string($processedFile) && file_exists($processedFile)) {
                 @unlink($processedFile);
             }
-
-            /** @var Media $media */
-            $media = $model->getMedia($options->collection)->last();
 
             Log::info("Image uploadé avec succès", [
                 'model_type' => get_class($model),

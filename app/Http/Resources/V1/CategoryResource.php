@@ -31,6 +31,37 @@ class CategoryResource extends JsonResource
             'children_count' => $this->when($this->relationLoaded('children'), fn() => $this->children->count()),
             'items_count'    => $this->when($this->relationLoaded('items'), fn() => $this->items->count()),
             'items'          => ItemResource::collection($this->whenLoaded('items')),
+
+            'images' => [
+                'main' => $this->getMainImageUrls(),
+            ]
         ];
     }
+
+    private function getMainImageUrls(): ?array
+    {
+        $media = $this->getFirstMedia('main_image');
+
+        if (! $media) {
+            return null;
+        }
+
+        return [
+            'id'        => $media->id,
+            'original'  => $media->getUrl(),
+            'thumbnail' => $media->getUrl('thumbnail'),
+            'banner'    => $media->getUrl('banner'),
+            'icon'      => $media->getUrl('icon'),
+        ];
+    }
+
+    private function getGalleryImageUrls(): array
+    {
+        return $this->getMedia('gallery')->map(fn ($media) => [
+            'id'        => $media->id,
+            'original'  => $media->getUrl(),
+            'thumbnail' => $media->getUrl('thumbnail'),
+        ])->toArray();
+    }
+
 }

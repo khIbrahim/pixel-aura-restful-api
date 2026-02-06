@@ -29,20 +29,13 @@ class CategoriesController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $filters = $request->only(['is_active', 'search', 'parent_id', 'with']);
-        $perPage = (int) $request->get('per_page', 25);
-        $storeId = $request->user()->store_id;
-        $categories = $this->categoryService->list($storeId, $filters, $perPage);
+        $categories = Category::query()
+            ->with('media')
+            ->when($request->boolean('is_active'), fn($query) => $query->where('is_active', true))
+            ->when($request->filled('search'), fn($query) => $query->where('name', 'like', '%'. $request->get('search') . '%'))
+            ->paginate($request->input('limit', 15));
 
-        return response()->json([
-            'data' => CategoryResource::collection($categories),
-            'meta' => [
-                'current_page' => $categories->currentPage(),
-                'per_page'     => $categories->perPage(),
-                'total'        => $categories->total(),
-                'last_page'    => $categories->lastPage(),
-            ]
-        ]);
+        return CategoryResource::collection($categories)->response();
     }
 
     /**
@@ -71,6 +64,8 @@ class CategoriesController extends Controller
 
     public function show(Category $category): JsonResponse
     {
+        $category->load('media');
+
         return response()->json([
             'data' => new CategoryResource($category)
         ]);
