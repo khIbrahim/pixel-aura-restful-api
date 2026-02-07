@@ -53,6 +53,11 @@ class Option extends Model implements HasMedia, DefinesMediaPath
         'preparation_time_minutes' => 'integer',
     ];
 
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class, 'store_id');
+    }
+
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'item_options')

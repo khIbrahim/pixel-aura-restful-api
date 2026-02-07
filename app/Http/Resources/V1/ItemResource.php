@@ -3,6 +3,7 @@
 namespace App\Http\Resources\V1;
 
 use App\Models\V1\Item;
+use App\ValueObjects\V1\Money;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,6 +26,7 @@ class ItemResource extends JsonResource
             'currency'          => $this->currency,
             'base_price_cents'  => $this->base_price_cents,
             'current_cost_cents'=> $this->current_cost_cents,
+            'formatted_price'   => Money::ofMinor($this->base_price_cents, $this->currency)->toArray(),
             'is_active'         => $this->is_active,
             'track_inventory'   => $this->track_inventory,
             'stock'             => $this->stock,
