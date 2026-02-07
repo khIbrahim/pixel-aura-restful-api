@@ -13,7 +13,6 @@ use App\Contracts\V1\Option\OptionRepositoryInterface;
 use App\Contracts\V1\Option\OptionServiceInterface;
 use App\Contracts\V1\OptionList\OptionListRepositoryInterface;
 use App\Contracts\V1\OptionList\OptionListServiceInterface;
-use App\Repositories\V1\Ingredient\CachedIngredientRepository;
 use App\Repositories\V1\Ingredient\IngredientRepository;
 use App\Repositories\V1\Item\ItemRepository;
 use App\Repositories\V1\ItemVariant\ItemVariantRepository;
@@ -36,7 +35,7 @@ class ItemServiceProvider extends ServiceProvider
 
         $this->app->bind(ItemAttachmentServiceInterface::class, ItemAttachmentService::class);
 
-        $this->app->bind(IngredientRepositoryInterface::class, fn ($app) => new CachedIngredientRepository(new IngredientRepository));
+        $this->app->bind(IngredientRepositoryInterface::class, fn ($app) => new IngredientRepository);
         $this->app->bind(IngredientServiceInterface::class, IngredientService::class);
 
         $this->app->bind(OptionRepositoryInterface::class, fn ($app) => new OptionRepository);

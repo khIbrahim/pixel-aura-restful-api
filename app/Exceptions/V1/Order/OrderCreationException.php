@@ -66,6 +66,11 @@ class OrderCreationException extends BaseApiException
         return new self("Les détails pour le service de cueillette sont invalides: $message");
     }
 
+    public static function insufficientStock(int $itemId, string $itemName): self
+    {
+        return new self("Stock insuffisant pour l'item $itemName (ID: $itemId)");
+    }
+
     public static function default(?Throwable $e): self
     {
         return new self("Une erreur est survenue lors de la création de la commande", previous: $e);

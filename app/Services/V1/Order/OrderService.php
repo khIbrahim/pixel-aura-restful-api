@@ -41,6 +41,18 @@ readonly class OrderService implements OrderServiceInterface
                 $pricedData         = $this->calculatorService->calculate($data);
                 $pricedData->number = $this->numberService->generate($pricedData->store_id);
 
+                foreach($data->items as $orderItem){
+                    $item = $orderItem->item;
+                    if($item->track_inventory){
+                        $stock = $item->stock - $orderItem->quantity;
+                        if($stock < 0){
+                            throw OrderCreationException::insufficientStock($item->id, $item->name);
+                        }
+
+                        $item->update(['stock' => $stock]);
+                    }
+                }
+
                 $order = $this->repository->createOrder($pricedData);
 
                 Log::info("Commande créée avec succès", [
