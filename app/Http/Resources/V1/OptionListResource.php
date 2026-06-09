@@ -25,18 +25,18 @@ class OptionListResource extends AbstractPivotResource
             'max_selections' => $this->max_selections,
 
             'pivot' => [
-                'item'            => $this->getPivotValue('item_id'),
-                'is_required'     => $this->getPivotValue('is_required'),
-                'min_selections'  => $this->getPivotValue('min_selections'),
-                'max_selections'  => $this->getPivotValue('max_selections'),
-                'display_order'   => $this->getPivotValue('display_order'),
-                'is_active'       => $this->getPivotValue('is_active'),
+                'item'           => $this->getPivotValue('item_id'),
+                'is_required'    => $this->getPivotValue('is_required'),
+                'min_selections' => $this->getPivotValue('min_selections'),
+                'max_selections' => $this->getPivotValue('max_selections'),
+                'display_order'  => $this->getPivotValue('display_order'),
+                'is_active'      => $this->getPivotValue('is_active'),
             ],
 
-            'options' => OptionResource::collection($this->whenLoaded('options')),
+            'options'       => OptionResource::collection($this->whenLoaded('options')),
             'options_count' => $this->whenLoaded('options', fn() => $this->options->count()),
-            'created_at'     => $this->created_at->toISOString(),
-            'updated_at'     => $this->updated_at->toISOString(),
+            'created_at'    => $this->created_at->toISOString(),
+            'updated_at'    => $this->updated_at->toISOString(),
         ];
     }
 }

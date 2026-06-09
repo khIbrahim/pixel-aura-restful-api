@@ -44,7 +44,7 @@ class StoresController extends Controller
     {
         $stores = Store::query()
             ->with('owner')
-            ->withCount('members')
+//            ->withCount('members')
             ->paginate(20);
 
         return StoreResource::collection($stores);

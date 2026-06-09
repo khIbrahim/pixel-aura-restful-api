@@ -57,8 +57,8 @@ return [
             'cleanup_after' => 3600,
         ],
         'security' => [
-            'scan_for_malware'    => false, // Intégration future avec ClamAV
-            'max_file_size'       => 10 * 1024 * 1024, // 10MB
+            'scan_for_malware'    => false,
+            'max_file_size'       => 10 * 1024 * 1024,
             'check_image_headers' => true,
         ]
     ]

@@ -11,6 +11,10 @@ Route::prefix('v1/option-lists')
             ->name('option-lists.index')
             ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_READ]);
 
+        Route::get('/item/{item}', [OptionListController::class, 'indexByItem'])
+            ->name('option-lists.index-by-item')
+            ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_READ]);
+
         Route::post('/', [OptionListController::class, 'store'])
             ->name('option-lists.store')
             ->middleware(['ability:' . StoreTokenAbilities::OPTION_LIST_CREATE]);

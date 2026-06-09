@@ -11,8 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('personal_access_tokens', function (Blueprint $table) {
-            //
+        Schema::table('items', function (Blueprint $table) {
+            $table->string('scope')
+                ->nullable()
+                ->after('store_id')
+                ->index();
         });
     }
 
@@ -21,8 +24,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('personal_access_tokens', function (Blueprint $table) {
-            //
+        Schema::table('items', function (Blueprint $table) {
+            $table->dropColumn('scope');
         });
     }
 };

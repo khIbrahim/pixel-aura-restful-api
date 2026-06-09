@@ -87,6 +87,20 @@ class CreateItemRequest extends FormRequest
 
             'image'     => ['nullable', new ImageRule(), 'prohibits:image_url'],
             'image_url' => ['nullable', new ImageUrlRule(), 'prohibits:image'],
+
+            'option_lists' => ['nullable', 'array'],
+
+            'option_lists.*.id' => [
+                'required',
+                'integer',
+                Rule::exists('option_lists', 'id')->where(fn($q) => $q->where('store_id', $this->user()->store_id)),
+            ],
+
+            'option_lists.*.is_required' => ['sometimes', 'boolean'],
+            'option_lists.*.min_selections' => ['sometimes', 'integer', 'min:0'],
+            'option_lists.*.max_selections' => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'option_lists.*.display_order' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'option_lists.*.is_active' => ['sometimes', 'boolean'],
         ];
     }
 

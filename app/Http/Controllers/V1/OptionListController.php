@@ -11,6 +11,7 @@ use App\Http\Requests\V1\OptionList\CreateOptionListRequest;
 use App\Http\Requests\V1\OptionList\UpdateOptionListRequest;
 use App\Http\Resources\V1\OptionListResource;
 use App\Hydrators\V1\OptionList\OptionListHydrator;
+use App\Models\V1\Item;
 use App\Models\V1\OptionList;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -103,6 +104,14 @@ class OptionListController extends Controller
                 'context' => $e->getContext()
             ], $e->getStatusCode());
         }
+    }
+
+    public function indexByItem(Item $item): OptionListResource
+    {
+        $optionLists = $this->optionListService->getByItem($item);
+        var_dump($optionLists->get());
+
+        return OptionListResource::collection($optionLists);
     }
 
 }

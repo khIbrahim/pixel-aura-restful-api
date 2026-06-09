@@ -8,6 +8,7 @@ use App\DTO\V1\Item\CreateItemDTO;
 use App\DTO\V1\Item\UpdateItemDTO;
 use App\DTO\V1\ItemVariant\CreateItemVariantDTO;
 use App\DTO\V1\Option\CreateOptionDTO;
+use App\DTO\V1\OptionList\AttachOptionListDTO;
 use App\Http\Requests\V1\Item\UpdateItemRequest;
 use App\Http\Requests\V1\StoreMember\CreateItemRequest;
 use App\Hydrators\V1\BaseHydrator;
@@ -64,6 +65,19 @@ class ItemHydrator extends BaseHydrator
             );
         }
 
+        $optionLists = [];
+        foreach ((array) ($data['option_lists'] ?? []) as $ol) {
+            $optionLists[] = new AttachOptionListDTO(
+                id: (int) $ol['id'],
+                store_id: $storeId,
+                is_required: (bool) ($ol['is_required'] ?? false),
+                min_selections: (int) ($ol['min_selections'] ?? 0),
+                max_selections: isset($ol['max_selections']) ? (int) $ol['max_selections'] : null,
+                display_order: $ol['display_order'] ?? null,
+                is_active: (bool) ($ol['is_active'] ?? true),
+            );
+        }
+
         $data = $request->validated();
         $image = $data['image'] ?? $data['image_url'] ?? null;
 
@@ -92,6 +106,7 @@ class ItemHydrator extends BaseHydrator
             tax_id: $data['tax_id'] ?? null,
             created_by: $request->attributes->get('store_member')->id ?? $request->user()->id,
             image: $image,
+            optionLists: $optionLists,
         );
     }
 

@@ -39,6 +39,7 @@ final readonly class CreateItemDTO implements Arrayable
         public ?int $tax_id = null,
         public ?int $created_by = null,
         public ?string $image = null,
+        public ?array $optionLists = null,
     ) {}
 
     public function toArray(): array
@@ -68,6 +69,7 @@ final readonly class CreateItemDTO implements Arrayable
             'tax_id' => $this->tax_id,
             'created_by' => $this->created_by,
             'image' => $this->image,
+            'optionLists' => array_map(fn ($optionList) => $optionList->toArray(), (array) $this->optionLists),
         ];
     }
 }

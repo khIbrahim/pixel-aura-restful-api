@@ -63,6 +63,10 @@ readonly class ItemService implements ItemServiceInterface
                     $this->itemAttachmentService->attachOption($item, OptionPivotDTO::fromCreation($optionDTO, $option));
                 }
 
+//                foreach ($data->optionLists as $optionListDTO) {
+//                    $this->itemAttachmentService->attachOptionList($item, $optionListDTO);
+//                }
+
                 if ($data->image !== null && $data->image !== '') {
                     $this->mediaManager->uploadImage($item, $data->image, MediaUploadOptions::fromItemImage());
                 }

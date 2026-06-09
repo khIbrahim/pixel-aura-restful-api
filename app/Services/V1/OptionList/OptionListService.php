@@ -9,8 +9,10 @@ use App\DTO\V1\OptionList\UpdateOptionListDTO;
 use App\Exceptions\V1\OptionList\OptionListCreationException;
 use App\Exceptions\V1\OptionList\OptionListDeletionException;
 use App\Exceptions\V1\OptionList\OptionListUpdateException;
+use App\Models\V1\Item;
 use App\Models\V1\OptionList;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -147,5 +149,10 @@ readonly class OptionListService implements OptionListServiceInterface
     {
         Cache::tags(['option_lists'])->flush();
         Cache::forget("option_lists.store.$storeId");
+    }
+
+    public function getByItem(Item $item)
+    {
+        return $item->optionLists()->with('options');
     }
 }

@@ -74,6 +74,12 @@ return [
             'throw' => false,
             'url' => env('AWS_URL'),
         ],
+
+        'legal' => [
+            'driver' => 'local',
+            'root'   => storage_path('app'),
+            'throw'  => false,
+        ]
     ],
 
     /*
