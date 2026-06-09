@@ -57,7 +57,7 @@ class StoreResource extends JsonResource
             'isActive'       => $this->is_active,
 
             'createdAt'      => $this->created_at?->toISOString(),
-            'updatedAt'      => $this->created_at?->toISOString(),
+            'updatedAt'      => $this->updated_at?->toISOString(),
         ];
     }
 }
