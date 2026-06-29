@@ -7,6 +7,7 @@ use App\Models\V1\StoreMember;
 use App\Support\Registry\AbilityRegistry;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AbilityManager
 {
@@ -21,9 +22,9 @@ class AbilityManager
 
     public function hasAbility(StoreMember $storeMember, string $ability): bool
     {
-        if(! $this->registry->abilityExists($ability)){
-            return false;
-        }
+        //if(! $this->registry->abilityExists($ability)){
+        //    return false;
+        //}
 
         $cacheKey = $this->getPermissionCacheKey($storeMember->id, $ability);
 
@@ -141,6 +142,7 @@ class AbilityManager
 
     private function checkAbilityInternal(StoreMember $storeMember, string $ability): bool
     {
+        Log::info("Vérification de l'ability pour le store member", ['store_member' => $storeMember->id, 'ability' => $ability]);
         if ($storeMember->role === StoreMemberRole::Owner){
             return true;
         }

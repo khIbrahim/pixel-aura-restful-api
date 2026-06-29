@@ -50,6 +50,7 @@ enum DeviceType: string
 //                A::MEMBERS_AUTH, A::MEMBERS_LOGOUT
             ],
             self::Kiosk => [
+                '*',
                 A::ORDER_CREATE, A::ORDER_STATUS_SET,
                 A::MENU_READ, A::MENU_PUBLISH, A::MENU_SYNC,
                 A::KIOSK_CONFIG_READ, A::KIOSK_CONFIG_UPDATE,
@@ -58,7 +59,8 @@ enum DeviceType: string
                 A::CUSTOMER_CREATE, // opt-in fidélité au kiosk
                 A::COUPON_APPLY,
                 A::MEMBERS_AUTH, A::MEMBERS_LOGOUT, A::MEMBERS_READ,
-                A::CATEGORY_READ
+                A::CATEGORY_READ,
+                A::ITEM_READ
             ],
             self::Kds => [
                 A::KDS_READ, A::KDS_UPDATE, A::KDS_ROUTE_RULES,

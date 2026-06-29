@@ -2,6 +2,7 @@
 
 use App\Constants\V1\StoreTokenAbilities;
 use App\Http\Controllers\V1\CategoriesController;
+use App\Http\Controllers\V1\CategoryOptionListsController;
 use App\Support\Facades\Ability;
 use Illuminate\Support\Facades\Route;
 
@@ -28,4 +29,14 @@ Route::prefix('v1/categories')
 
         Route::patch('{category}/activation', [CategoriesController::class, 'toggleActivation'])
             ->middleware(['ability:' . StoreTokenAbilities::CATEGORY_ACTIVATE]);
+
+        // OPTION LISTS
+        Route::get('{category}/option-lists', [CategoryOptionListsController::class, 'index'])
+            ->name('item_attachments.option_lists.index');
+
+        Route::post('{category}/option-lists', [CategoryOptionListsController::class, 'attach'])
+            ->name('item_attachments.option_lists.attach');
+
+        Route::delete('{category}/option-lists/{optionList}', [CategoryOptionListsController::class, 'detach'])
+            ->name('item_attachments.option_lists.detach');
     });

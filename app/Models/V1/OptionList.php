@@ -57,6 +57,13 @@ class OptionList extends Model
         return $this->hasMany(Option::class, 'option_list_id');
     }
 
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_option_lists')
+            ->withPivot(['store_id', 'is_required', 'min_selections', 'max_selections', 'display_order', 'is_active'])
+            ->withTimestamps();
+    }
+
     public function items(): BelongsToMany
     {
         return $this->belongsToMany(Item::class, 'item_option_lists')

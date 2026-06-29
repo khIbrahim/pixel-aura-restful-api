@@ -4,6 +4,7 @@ namespace App\Http\Resources\V1;
 
 use App\Models\V1\Option;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @mixin Option
@@ -12,6 +13,8 @@ class OptionResource extends AbstractPivotResource
 {
     public function toArray(Request $request): array
     {
+        Log::info("images", $this->media()->get()->toArray());
+
         return [
             'name'           => $this->getPivotValue('name'),
             'id'             => $this->getPivotValue('id'),

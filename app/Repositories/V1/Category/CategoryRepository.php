@@ -5,12 +5,14 @@ namespace App\Repositories\V1\Category;
 use App\Contracts\V1\Category\CategoryRepositoryInterface;
 use App\Models\V1\Category;
 use App\Repositories\V1\BaseRepository;
+use App\Traits\V1\Repository\ManagesRelations;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Facades\Cache;
 
 class CategoryRepository extends BaseRepository implements CategoryRepositoryInterface
 {
+    use ManagesRelations;
 
     private const int CACHE_TTL = 600;
 

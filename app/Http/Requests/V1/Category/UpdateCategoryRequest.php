@@ -18,11 +18,11 @@ class UpdateCategoryRequest extends FormRequest
     {
         return [
             'name'        => ['sometimes', 'string', 'max:255'],
-            'description' => ['sometimes', 'string', 'nullable'],
-            'tags'        => ['sometimes', 'array'],
+            'description' => ['sometimes', 'nullable', 'string', 'nullable'],
+            'tags'        => ['sometimes', 'nullable', 'array'],
             'tags.*'      => ['string', 'max:50'],
-            'position'    => ['sometimes', 'integer', 'min:1'],
-            'parent_id'   => ['sometimes', 'integer', Rule::exists('categories', 'id')->where(
+            'position'    => ['sometimes', 'nullable', 'integer', 'min:1'],
+            'parent_id'   => ['nullable', 'integer', Rule::exists('categories', 'id')->where(
                 fn($query) => $query->where('store_id', $this->user()->store_id)
             )],
             'is_active'   => ['sometimes', 'boolean'],

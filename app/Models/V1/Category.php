@@ -7,27 +7,29 @@ use App\Traits\V1\Media\HasImages;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Nette\Utils\FileSystem;
 use Spatie\MediaLibrary\HasMedia;
 
 /**
- * @property int              $id
- * @property int              $store_id
- * @property string           $name
- * @property string|null      $description
- * @property array|null       $tags
- * @property string           $sku
- * @property int              $position
- * @property null|int         $parent_id
- * @property boolean          $is_active
- * @property Carbon           $created_at
- * @property Carbon           $updated_at
- * @property Category|null    $parent
- * @property Store            $store
- * @property Category[]       $children
- * @property Collection<Item> $items
+ * @property int               $id
+ * @property int               $store_id
+ * @property string            $name
+ * @property string|null       $description
+ * @property array|null        $tags
+ * @property string            $sku
+ * @property int               $position
+ * @property null|int          $parent_id
+ * @property boolean           $is_active
+ * @property Carbon            $created_at
+ * @property Carbon            $updated_at
+ * @property Category|null     $parent
+ * @property Store             $store
+ * @property Category[]        $children
+ * @property Collection<Item>  $items
+ * @property OptionList[]|null $optionLists
  */
 class Category extends Model implements HasMedia, DefinesMediaPath
 {
@@ -82,6 +84,13 @@ class Category extends Model implements HasMedia, DefinesMediaPath
     public function hasActiveItems(): bool
     {
         return $this->items()->where('is_active', true)->exists();
+    }
+
+    public function optionLists(): BelongsToMany
+    {
+        return $this->belongsToMany(OptionList::class, 'category_option_lists')
+            ->withPivot(['store_id', 'is_required', 'min_selections', 'max_selections', 'display_order', 'is_active'])
+            ->withTimestamps();
     }
 
     public function getMediaBasePath(): string

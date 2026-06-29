@@ -60,7 +60,7 @@ readonly class StoreService implements StoreServiceInterface
             ]);
         }
 
-        $ownerData = $data['owner'];
+        $ownerData   = $data['owner'];
         $nameExplode = explode(" ", (string) $ownerData['name']);
         $firstName   = $nameExplode[0] ?? null;
         $lastName    = $nameExplode[1] ?? null;

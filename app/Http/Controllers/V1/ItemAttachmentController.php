@@ -230,7 +230,7 @@ class ItemAttachmentController extends Controller
             return response()->json([
                 'data' => OptionListResource::collection($optionLists),
                 'meta' => [
-                    'total' => $optionLists->count(),
+                    'total'   => $optionLists->count(),
                     'item_id' => $item->id,
                 ]
             ]);

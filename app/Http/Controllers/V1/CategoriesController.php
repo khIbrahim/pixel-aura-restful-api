@@ -31,8 +31,15 @@ class CategoriesController extends Controller
     {
         $categories = Category::query()
             ->with('media')
-            ->when($request->boolean('is_active'), fn($query) => $query->where('is_active', true))
-            ->when($request->filled('search'), fn($query) => $query->where('name', 'like', '%'. $request->get('search') . '%'))
+            ->when($request->has('is_active'), function($query) use ($request){
+                $query->where('is_active', $request->boolean('is_active'));
+            })
+            ->when($request->filled('search'), function($query) use ($request){
+                $query->where('name', 'ilike', '%', $request->get('search') . '%');
+            })
+            ->when($request->boolean('option_lists'), function($query) use ($request){
+                $query->with('optionLists.options');
+            })
             ->paginate($request->input('limit', 15));
 
         return CategoryResource::collection($categories)->response();

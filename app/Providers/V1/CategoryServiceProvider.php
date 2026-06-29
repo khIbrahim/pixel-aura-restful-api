@@ -2,10 +2,12 @@
 
 namespace App\Providers\V1;
 
+use App\Contracts\V1\Category\CategoryOptionListsServiceInterface;
 use App\Contracts\V1\Category\CategoryRepositoryInterface;
 use App\Contracts\V1\Category\CategoryServiceInterface;
 use App\Exceptions\V1\Category\CategoryNotFoundException;
 use App\Repositories\V1\Category\CategoryRepository;
+use App\Services\V1\Category\CategoryOptionListsService;
 use App\Services\V1\Category\CategoryService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -21,6 +23,8 @@ class CategoryServiceProvider extends ServiceProvider
             CategoryServiceInterface::class,
             CategoryService::class
         );
+
+        $this->app->bind(CategoryOptionListsServiceInterface::class, fn ($app) => new CategoryOptionListsService($app->make(CategoryRepositoryInterface::class)));
 
         Route::bind('category', function ($value) {
             $storeId = request()->user()->store_id;

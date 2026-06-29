@@ -9,6 +9,7 @@ use App\Services\V1\Auth\AbilityManager;
 use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 readonly class CheckAbility
@@ -51,6 +52,7 @@ readonly class CheckAbility
             return $this->forbiddenResponse('Compte désactivé');
         }
 
+                Log::info("alors ça passe, on va vérifier les abilities du store member", ['store_member' => $token->store_member_id]);
         $hasPermission = $this->abilityManager->hasAllAbilities($storeMember, $abilities);
 
         if(! $hasPermission){

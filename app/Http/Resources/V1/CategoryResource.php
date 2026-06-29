@@ -31,6 +31,7 @@ class CategoryResource extends JsonResource
             'children_count' => $this->when($this->relationLoaded('children'), fn() => $this->children->count()),
             'items_count'    => $this->when($this->relationLoaded('items'), fn() => $this->items->count()),
             'items'          => ItemResource::collection($this->whenLoaded('items')),
+            'option_lists'   => OptionListResource::collection($this->whenLoaded('optionLists')),
 
             'images' => [
                 'main' => $this->getMainImageUrls(),
