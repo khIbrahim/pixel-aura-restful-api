@@ -52,9 +52,7 @@ readonly class CheckAbility
             return $this->forbiddenResponse('Compte désactivé');
         }
 
-                Log::info("alors ça passe, on va vérifier les abilities du store member", ['store_member' => $token->store_member_id]);
         $hasPermission = $this->abilityManager->hasAllAbilities($storeMember, $abilities);
-
         if(! $hasPermission){
             return $this->forbiddenResponse(
                 'Permissions insuffisantes',

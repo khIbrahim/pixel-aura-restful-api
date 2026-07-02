@@ -82,15 +82,15 @@ readonly class StoreService implements StoreServiceInterface
         $code = $codeService->next($store->id, StoreMemberRole::Owner);
 
         StoreMember::create([
-            'store_id'  => $store->id,
-            'user_id'   => $owner->id,
-            'name'      => 'Owner',
-            'code'      => $code,
-            'role'      => StoreMemberRole::Owner->value,
-            'pin_hash'  => Hash::make(Defaults::PIN),
-            'is_active' => true,
+            'store_id'            => $store->id,
+            'user_id'             => $owner->id,
+            'name'                => 'Owner',
+            'code_number'         => $code,
+            'role'                => StoreMemberRole::Owner->value,
+            'pin_hash'            => Hash::make(Defaults::PIN),
+            'is_active'           => true,
             'pin_last_changed_at' => now(),
-            'permissions' => ['*'],
+            'permissions'         => ['*'],
         ]);
     }
 

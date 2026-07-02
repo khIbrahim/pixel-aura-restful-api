@@ -19,9 +19,8 @@ class StoreMemberAuthRepository implements StoreMemberAuthRepositoryInterface
 
     public function findByCode(int $storeId, string $code): ?StoreMember
     {
-        $cacheKey = sprintf("store_member:%d:code:%s", $storeId, $code);
-
-        return Cache::remember($cacheKey, self::CACHE_TTL, function () use($storeId, $code) {
+//        $cacheKey = sprintf("store_member:%d:code:%s", $storeId, $code);
+//        return Cache::remember($cacheKey, self::CACHE_TTL, function () use($storeId, $code) {
             $parts = explode("-", $code);
             if (count($parts) !== 2) {
                 return null;
@@ -42,7 +41,7 @@ class StoreMemberAuthRepository implements StoreMemberAuthRepositoryInterface
                 ->where('is_active', true)
                 ->where('role', 'LIKE', '%' . $role->value . '%')
                 ->first();
-        });
+//        });
     }
 
     public function findById(int $id): ?StoreMember

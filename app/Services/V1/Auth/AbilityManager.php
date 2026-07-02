@@ -142,7 +142,6 @@ class AbilityManager
 
     private function checkAbilityInternal(StoreMember $storeMember, string $ability): bool
     {
-        Log::info("Vérification de l'ability pour le store member", ['store_member' => $storeMember->id, 'ability' => $ability]);
         if ($storeMember->role === StoreMemberRole::Owner){
             return true;
         }

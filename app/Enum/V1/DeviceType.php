@@ -36,18 +36,7 @@ enum DeviceType: string
     {
         $map = match ($this) {
             self::Pos => [
-                '*'
-//                A::ORDER_READ, A::ORDER_CREATE, A::ORDER_UPDATE, A::ORDER_VOID, A::ORDER_DISCOUNT, A::ORDER_REPRINT,
-//                A::ORDER_STATUS_SET,
-//                A::PAYMENT_CAPTURE, A::PAYMENT_REFUND, A::TIPS_ADD,
-//                A::SESSION_OPEN, A::SESSION_CLOSE, A::DRAWER_OPEN, A::DRAWER_PAYIN, A::DRAWER_PAYOUT,
-//                A::MENU_READ, A::MENU_SYNC, A::PRICE_OVERRIDE,
-//                A::CUSTOMER_READ, A::CUSTOMER_CREATE, A::CUSTOMER_UPDATE, A::COUPON_APPLY, A::VOUCHER_REDEEM,
-//                A::PRINTER_READ, A::PRINTER_UPDATE, A::DEVICE_SYNC,
-//                A::KDS_READ,
-//                A::DELIVERY_READ, A::DELIVERY_UPDATE,
-//                A::ANALYTICS_READ,
-//                A::MEMBERS_AUTH, A::MEMBERS_LOGOUT
+                A::WILDCARD
             ],
             self::Kiosk => [
                 '*',
@@ -97,8 +86,9 @@ enum DeviceType: string
             ],
         };
 
-        // Filtre les abilities sur le référentiel connu.
-        return array_values(array_intersect($map, A::all()));
+        $allowedAbilities = array_merge([A::WILDCARD], A::all());
+
+        return array_values(array_intersect($map, $allowedAbilities));
     }
 
     // --- Métadonnées UI / business ------------------------------------------

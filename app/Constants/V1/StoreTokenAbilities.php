@@ -6,6 +6,8 @@ use ReflectionClass;
 
 final class StoreTokenAbilities
 {
+
+    public const string WILDCARD = '*';
     public const string STORE_READ   = 'store:read';
     public const string STORE_UPDATE = 'store:update';
     public const string STORE_DELETE = 'store:delete';
