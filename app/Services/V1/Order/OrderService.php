@@ -11,6 +11,8 @@ use App\Events\V1\Order\OrderStatusChanged;
 use App\Exceptions\V1\Order\OrderCreationException;
 use App\Exceptions\V1\Order\OrderUpdateException;
 use App\Models\V1\Order;
+use Carbon\CarbonImmutable;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -127,5 +129,24 @@ readonly class OrderService implements OrderServiceInterface
             'estimated_preparation_minutes' => $prepTime,
             'excepted_ready_at'             => now()->addMinutes($prepTime)
         ]);
+    }
+
+    public function listForDashboard(int $storeId, array $filters, int $perPage = 25, string $timezone = 'UTC'): LengthAwarePaginator
+    {
+        if(! empty($filters['date_from'])){
+            $filters['created_from'] = CarbonImmutable::parse($filters['date_from'], $timezone)->startOfDay()->utc();
+        }
+
+        if(! empty($filters['date_to'])){
+            $filters['created_to'] = CarbonImmutable::parse($filters['date_to'], $timezone)->endOfDay()->utc();
+        }
+
+        unset($filters['date_from'], $filters['date_to']);
+
+        return $this->repository->paginateForDashboard(
+            storeId: $storeId,
+            filters: $filters,
+            perPage: $perPage
+        );
     }
 }
