@@ -21,13 +21,13 @@ class AttachIngredientsRequest extends FormRequest
                 'integer',
                 Rule::exists('ingredients', 'id')->where('store_id', $this->attributes->get('store')->id)
             ],
-            'ingredients.*.name'                => ['sometimes', 'string', 'max:255'],
-            'ingredients.*.description'         => ['sometimes', 'string', 'max:1000'],
-            'ingredients.*.unit'                => ['sometimes', 'string', 'max:100'],
-            'ingredients.*.cost_per_unit_cents' => ['sometimes', 'integer', 'min:0'],
-            'ingredients.*.is_mandatory'        => ['sometimes', 'boolean'],
-            'ingredients.*.is_allergen'         => ['sometimes', 'boolean'],
-            'ingredients.*.is_active'           => ['sometimes', 'boolean'],
+            'ingredients.*.name'                => ['sometimes', 'nullable', 'string', 'max:255'],
+            'ingredients.*.description'         => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'ingredients.*.unit'                => ['sometimes', 'nullable', 'string', 'max:100'],
+            'ingredients.*.cost_per_unit_cents' => ['sometimes', 'nullable', 'integer', 'min:0'],
+            'ingredients.*.is_mandatory'        => ['sometimes', 'nullable', 'boolean'],
+            'ingredients.*.is_allergen'         => ['sometimes', 'nullable', 'boolean'],
+            'ingredients.*.is_active'           => ['sometimes', 'nullable', 'boolean'],
         ];
     }
 
