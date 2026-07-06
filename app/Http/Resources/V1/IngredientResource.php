@@ -23,6 +23,26 @@ class IngredientResource extends AbstractPivotResource
             'cost_per_unit_cents' => $this->getPivotValue('cost_per_unit_cents'),
             'created_at'          => $this->getPivotValue('created_at'),
             'updated_at'          => $this->getPivotValue('updated_at'),
+            'images' => [
+                'main' => $this->getMainImageUrls(),
+            ]
+        ];
+    }
+
+    private function getMainImageUrls(): ?array
+    {
+        $media = $this->getFirstMedia('main_image');
+
+        if (! $media) {
+            return null;
+        }
+
+        return [
+            'id'        => $media->id,
+            'original'  => $media->getUrl(),
+            'thumbnail' => $media->getUrl('thumbnail'),
+            'banner'    => $media->getUrl('banner'),
+            'icon'      => $media->getUrl('icon'),
         ];
     }
 

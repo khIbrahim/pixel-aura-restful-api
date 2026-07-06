@@ -23,7 +23,7 @@ Route::bind('modelBinding', function ($value, $route) {
         'store-member' => StoreMember::class,
         'store_member' => StoreMember::class,
         'device'       => Device::class,
-        'ingredient'   => Ingredient::class,
+        'ingredients'  => Ingredient::class,
         'option'       => Option::class,
         'item_variant' => ItemVariant::class,
         'category'     => Category::class,
