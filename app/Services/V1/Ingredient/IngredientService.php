@@ -37,7 +37,7 @@ readonly class IngredientService implements IngredientServiceInterface
                 throw IngredientUpdateException::nameAlreadyExists($name);
             }
 
-            if(isset($data->is_allergen) && $data->is_allergen !== $ingredient->is_allergen && $ingredient->items()->where('is_active', true)->exists()){
+            if(isset($data->is_allergen) && $data->is_allergen !== $ingredient->is_allergen && $ingredient->items()->where('items.is_active', true)->exists()){
                 throw IngredientUpdateException::cannotChangeAllergenStatus();
             }
 

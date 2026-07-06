@@ -19,6 +19,7 @@ class IngredientResource extends AbstractPivotResource
             'name'                => $this->getPivotValue('name'),
             'description'         => $this->getPivotValue('description'),
             'is_allergen'         => $this->getPivotValue('is_allergen'),
+            'is_active'           => $this->getPivotValue('is_active'),
             'unit'                => $this->getPivotValue('unit'),
             'cost_per_unit_cents' => $this->getPivotValue('cost_per_unit_cents'),
             'created_at'          => $this->getPivotValue('created_at'),

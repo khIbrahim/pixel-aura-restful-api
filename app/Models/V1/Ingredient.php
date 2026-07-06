@@ -69,7 +69,10 @@ class Ingredient extends Model implements HasMedia, DefinesMediaPath
 
     public function hasActiveItems(): bool
     {
-        return $this->items()->where('is_active', true)->exists();
+        return $this->items()
+            ->where('items.is_active', true)
+            ->wherePivot('is_active', true)
+            ->exists();
     }
 
     /**
