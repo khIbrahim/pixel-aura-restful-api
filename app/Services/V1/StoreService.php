@@ -6,6 +6,7 @@ use App\Constants\V1\Defaults;
 use App\Contracts\V1\Store\StoreRepositoryInterface;
 use App\Contracts\V1\Store\StoreServiceInterface;
 use App\DTO\V1\Store\CreateStoreDTO;
+use App\DTO\V1\Store\UpdateStoreDTO;
 use App\Enum\V1\StoreMemberRole;
 use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
@@ -26,6 +27,14 @@ readonly class StoreService implements StoreServiceInterface
         /** @var Store $store */
         $store = $this->storeRepository->create(collect($data->toArray())->except('owner')->toArray());
         return $store;
+    }
+
+    public function update(UpdateStoreDTO $data, Store $store): Store
+    {
+        /** @var Store $updatedStore */
+        $updatedStore = $this->storeRepository->update($store, $data->toArray());
+
+        return $updatedStore->load('owner');
     }
 
     /**

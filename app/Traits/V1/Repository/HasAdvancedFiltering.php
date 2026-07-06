@@ -37,6 +37,10 @@ trait HasAdvancedFiltering
                 continue;
             }
 
+            if($key === 'with'){
+                continue;
+            }
+
             $query->where($key, $value);
         }
 

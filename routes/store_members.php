@@ -92,7 +92,7 @@ Route::prefix('v1')
         Route::controller(StoreMemberAuthController::class)
             ->group(function () {
                 // Authentification
-                Route::post('stores/{store}/members/{store_member}/authenticate', 'authenticate')
+                Route::post('stores/{store}/members/authenticate', 'authenticate')
                     ->middleware(['ability:' . StoreTokenAbilities::MEMBERS_AUTH, 'throttle:pin'])
                     ->name('store-members.authenticate')
                     ->whereNumber(['store', 'store_member']);

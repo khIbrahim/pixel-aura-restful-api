@@ -109,7 +109,6 @@ class OptionListController extends Controller
     public function indexByItem(Item $item): OptionListResource
     {
         $optionLists = $this->optionListService->getByItem($item);
-        var_dump($optionLists->get());
 
         return OptionListResource::collection($optionLists);
     }

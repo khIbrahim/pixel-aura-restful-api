@@ -76,17 +76,17 @@ readonly class OptionListService implements OptionListServiceInterface
                 );
             }
 
-            if($optionList->isUsedInActiveItems()){
-                if($data->name && $data->name !== $optionList->name){
-                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
-                }
-                if($data->min_selections !== null && $data->min_selections !== $optionList->min_selections){
-                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
-                }
-                if($data->max_selections !== null && $data->max_selections !== $optionList->max_selections){
-                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
-                }
-            }
+//            if($optionList->isUsedInActiveItems()){
+//                if($data->name && $data->name !== $optionList->name){
+//                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
+//                }
+//                if($data->min_selections !== null && $data->min_selections !== $optionList->min_selections){
+//                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
+//                }
+//                if($data->max_selections !== null && $data->max_selections !== $optionList->max_selections){
+//                    throw OptionListUpdateException::cannotModifyUsedInActiveItems();
+//                }
+//            }
 
             $updatedOptionList = $this->repository->update($optionList, $data->toArray());
 

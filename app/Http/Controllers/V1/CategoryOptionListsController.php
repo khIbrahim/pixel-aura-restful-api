@@ -27,7 +27,9 @@ class CategoryOptionListsController extends Controller
     public function index(Category $category): JsonResponse
     {
         try {
-            $optionLists = $category->load('optionLists')->optionLists;
+            $optionLists = $category->optionLists()
+                ->with('options')
+                ->get();
 
             return response()->json([
                 'data' => OptionListResource::collection($optionLists),

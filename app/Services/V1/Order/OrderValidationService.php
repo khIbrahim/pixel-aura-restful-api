@@ -65,17 +65,18 @@ class OrderValidationService
      */
     private function validateDineInDetails(OrderData $data): void
     {
-        if ($data->dine_in === null) {
-            throw OrderCreationException::missingDineInDetails();
-        }
-
-        if ($data->dine_in instanceof DineInInfo){
-            if (empty($data->dine_in->table_number)) {
-                throw OrderCreationException::invalidDineInDetails('Le numéro de table est requis pour les commandes sur place.');
-            }
-        } else {
-            throw OrderCreationException::invalidDineInDetails('Les informations de repas sur place sont invalides.');
-        }
+        //TODO ce sera géré par le service TARPLU
+//        if ($data->dine_in === null) {
+//            throw OrderCreationException::missingDineInDetails();
+//        }
+//
+//        if ($data->dine_in instanceof DineInInfo){
+//            if (empty($data->dine_in->table_number)) {
+//                throw OrderCreationException::invalidDineInDetails('Le numéro de table est requis pour les commandes sur place.');
+//            }
+//        } else {
+//            throw OrderCreationException::invalidDineInDetails('Les informations de repas sur place sont invalides.');
+//        }
     }
 
     /**

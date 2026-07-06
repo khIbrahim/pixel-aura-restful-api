@@ -108,9 +108,9 @@ readonly class OrderService implements OrderServiceInterface
             ]);
 
             broadcast(new OrderStatusChanged(
-                order: $order,
-                oldStatus: $oldStatus,
-                newStatus: OrderStatus::from($newStatus),
+                order:           $order,
+                oldStatus:       $oldStatus,
+                newStatus:       OrderStatus::from($newStatus),
                 preparationData: $order->getPreparationData()
             ))->toOthers();
 

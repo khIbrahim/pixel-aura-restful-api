@@ -220,7 +220,7 @@ class ItemAttachmentController extends Controller
     // ==================== OPTION LISTS ====================
 
     /**
-     * GET /api/v1/items/{item}/option-lists
+     * GET /api/v1/items/{item}/options-lists
      */
     public function indexOptionLists(Item $item): JsonResponse
     {

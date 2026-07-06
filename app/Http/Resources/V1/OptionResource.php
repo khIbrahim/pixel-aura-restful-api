@@ -13,8 +13,6 @@ class OptionResource extends AbstractPivotResource
 {
     public function toArray(Request $request): array
     {
-        Log::info("images", $this->media()->get()->toArray());
-
         return [
             'name'           => $this->getPivotValue('name'),
             'id'             => $this->getPivotValue('id'),

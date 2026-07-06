@@ -4,7 +4,9 @@ namespace App\Hydrators\V1\Store;
 
 use App\Contracts\V1\Shared\SkuGeneratorServiceInterface;
 use App\DTO\V1\Store\CreateStoreDTO;
+use App\DTO\V1\Store\UpdateStoreDTO;
 use App\Http\Requests\V1\StoreMember\CreateStoreRequest;
+use App\Http\Requests\V1\StoreMember\UpdateStoreRequest;
 use App\Hydrators\V1\BaseHydrator;
 use App\Models\V1\Store;
 use DateTimeZone;
@@ -47,6 +49,11 @@ class StoreHydrator extends BaseHydrator
         $data['sku'] = $sku;
 
         return $this->fromRequest($request, CreateStoreDTO::class);
+    }
+
+    public function fromUpdateRequest(UpdateStoreRequest $request): UpdateStoreDTO
+    {
+        return $this->fromRequest($request, UpdateStoreDTO::class);
     }
 
 }
