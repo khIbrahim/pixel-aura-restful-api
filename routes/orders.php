@@ -15,6 +15,9 @@ Route::prefix('v1/orders')
         Route::get('/{order}', [OrderController::class, 'show'])
             ->name('orders.show');
 
+        Route::patch('/{order}/status', [OrderController::class, 'updateStatus'])
+            ->name('orders.status.update');
+
         Route::get('/{order}/prep-status', [OrderController::class, 'getPreparationStatus'])
             ->name('orders.prep-status');
     });

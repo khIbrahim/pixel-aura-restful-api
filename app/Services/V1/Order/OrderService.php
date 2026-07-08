@@ -37,7 +37,7 @@ readonly class OrderService implements OrderServiceInterface
         try {
             Log::info("Création de la commande", ['data' => $data->toArray()]);
 
-            return DB::transaction(function () use ($data) {
+            $order = DB::transaction(function () use ($data) {
                 $data = $this->enricher->enrich($data);
                 $this->validationService->validate($data);
                 $pricedData         = $this->calculatorService->calculate($data);
@@ -63,10 +63,11 @@ readonly class OrderService implements OrderServiceInterface
                     'store_id'     => $order->store_id,
                 ]);
 
-                broadcast(new OrderCreated($order))->toOthers();
-
                 return $order;
             });
+
+            broadcast(new OrderCreated($order))->toOthers();
+            return $order;
         } catch(Throwable $e){
             Log::error("Une erreur est survenue lors de la création de la commande : " . $e->getMessage(), [
                 'exception' => $e,
@@ -93,7 +94,7 @@ readonly class OrderService implements OrderServiceInterface
             $newStatus = $newStatus->value;
         }
 
-        return DB::transaction(function () use ($order, $newStatus){
+        [$order, $oldStatus] = DB::transaction(function () use ($order, $newStatus){
             $oldStatus = $order->status;
             $timestamp = match($newStatus) {
                 OrderStatus::Confirmed->value  => 'confirmed_at',
@@ -109,15 +110,17 @@ readonly class OrderService implements OrderServiceInterface
                 $timestamp => now()
             ]);
 
-            broadcast(new OrderStatusChanged(
-                order:           $order,
-                oldStatus:       $oldStatus,
-                newStatus:       OrderStatus::from($newStatus),
-                preparationData: $order->getPreparationData()
-            ))->toOthers();
-
-            return $order;
+            return [$order, $oldStatus];
         });
+
+        broadcast(new OrderStatusChanged(
+            order:           $order,
+            oldStatus:       $oldStatus,
+            newStatus:       OrderStatus::from($newStatus),
+            preparationData: $order->getPreparationData()
+        ))->toOthers();
+
+        return $order;
     }
 
     public function updateEstimatedTime(Order $order): Order
