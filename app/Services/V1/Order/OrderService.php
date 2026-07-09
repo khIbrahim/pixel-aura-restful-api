@@ -6,11 +6,13 @@ use App\Contracts\V1\Order\OrderRepositoryInterface;
 use App\Contracts\V1\Order\OrderServiceInterface;
 use App\DTO\V1\Order\OrderData;
 use App\Enum\V1\Order\OrderStatus;
+use App\Events\V1\Notification\NotificationCreated;
 use App\Events\V1\Order\OrderCreated;
 use App\Events\V1\Order\OrderStatusChanged;
 use App\Exceptions\V1\Order\OrderCreationException;
 use App\Exceptions\V1\Order\OrderUpdateException;
 use App\Models\V1\Order;
+use App\Services\V1\Notification\OrderNotificationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -26,7 +28,8 @@ readonly class OrderService implements OrderServiceInterface
         private OrderPriceCalculatorService $calculatorService,
         private OrderRepositoryInterface    $repository,
         private OrderNumberService          $numberService,
-        private OrderPreparationService     $preparationService
+        private OrderPreparationService     $preparationService,
+        private OrderNotificationService    $notificationService,
     ){}
 
     /**
@@ -66,7 +69,11 @@ readonly class OrderService implements OrderServiceInterface
                 return $order;
             });
 
-            broadcast(new OrderCreated($order))->toOthers();
+            $event        = new OrderCreated($order);
+            $notification = $this->notificationService->created($order, $event->event_id);
+            broadcast($event)->toOthers();
+            broadcast(new NotificationCreated($notification))->toOthers();
+
             return $order;
         } catch(Throwable $e){
             Log::error("Une erreur est survenue lors de la création de la commande : " . $e->getMessage(), [
@@ -136,20 +143,41 @@ readonly class OrderService implements OrderServiceInterface
 
     public function listForDashboard(int $storeId, array $filters, int $perPage = 25, string $timezone = 'UTC'): LengthAwarePaginator
     {
-        if(! empty($filters['date_from'])){
-            $filters['created_from'] = CarbonImmutable::parse($filters['date_from'], $timezone)->startOfDay()->utc();
-        }
-
-        if(! empty($filters['date_to'])){
-            $filters['created_to'] = CarbonImmutable::parse($filters['date_to'], $timezone)->endOfDay()->utc();
-        }
-
-        unset($filters['date_from'], $filters['date_to']);
+        $filters = $this->normalizeDashboardFilters($filters, $timezone);
 
         return $this->repository->paginateForDashboard(
             storeId: $storeId,
             filters: $filters,
             perPage: $perPage
         );
+    }
+
+    public function countForDashboardByStatus(int $storeId, array $filters, string $timezone = 'UTC'): array
+    {
+        $filters = $this->normalizeDashboardFilters($filters, $timezone);
+
+        return $this->repository->countForDashboardByStatus(
+            storeId: $storeId,
+            filters: $filters
+        );
+    }
+
+    private function normalizeDashboardFilters(array $filters, string $timezone): array
+    {
+        if(! empty($filters['date_from'])){
+            $filters['created_from'] = CarbonImmutable::parse($filters['date_from'], $timezone)
+                ->startOfDay()
+                ->utc();
+        }
+
+        if(! empty($filters['date_to'])){
+            $filters['created_to'] = CarbonImmutable::parse($filters['date_to'], $timezone)
+                ->endOfDay()
+                ->utc();
+        }
+
+        unset($filters['date_from'], $filters['date_to']);
+
+        return $filters;
     }
 }

@@ -112,7 +112,7 @@ final class StoreTokenAbilities
     public const string VOUCHER_REDEEM    = 'voucher:redeem';
 
 // Reporting / exports / audit
-    public const string ANALYTICS_READ    = 'analytics:read';    // stats temps réel / dashboard
+    public const string ANALYTICS_READ    = 'analytics:read';    // stats temps réel / dashboard.php
     public const string EXPORTS_CREATE    = 'exports:create';    // CSV/Excel/PDF
     public const string AUDIT_READ        = 'audit:read';
 

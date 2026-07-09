@@ -11,8 +11,8 @@ return [
     | Pulse Domain
     |--------------------------------------------------------------------------
     |
-    | This is the subdomain which the Pulse dashboard will be accessible from.
-    | When set to null, the dashboard will reside under the same domain as
+    | This is the subdomain which the Pulse dashboard.php will be accessible from.
+    | When set to null, the dashboard.php will reside under the same domain as
     | the application. Remember to configure your DNS entries correctly.
     |
     */
@@ -24,7 +24,7 @@ return [
     | Pulse Path
     |--------------------------------------------------------------------------
     |
-    | This is the path which the Pulse dashboard will be accessible from. Feel
+    | This is the path which the Pulse dashboard.php will be accessible from. Feel
     | free to change this path to anything you'd like. Note that this won't
     | affect the path of the internal API that is never exposed to users.
     |
@@ -102,7 +102,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | This configuration option determines the cache driver that will be used
-    | for various tasks, including caching dashboard results, establishing
+    | for various tasks, including caching dashboard.php results, establishing
     | locks for events that should only occur on one server and signals.
     |
     */
@@ -211,8 +211,8 @@ return [
             'sample_rate' => env('PULSE_SLOW_REQUESTS_SAMPLE_RATE', 1),
             'threshold' => env('PULSE_SLOW_REQUESTS_THRESHOLD', 1000),
             'ignore' => [
-                '#^/'.env('PULSE_PATH', 'pulse').'$#', // Pulse dashboard...
-                '#^/telescope#', // Telescope dashboard...
+                '#^/'.env('PULSE_PATH', 'pulse').'$#', // Pulse dashboard.php...
+                '#^/telescope#', // Telescope dashboard.php...
             ],
         ],
 
@@ -228,8 +228,8 @@ return [
             'enabled' => env('PULSE_USER_REQUESTS_ENABLED', true),
             'sample_rate' => env('PULSE_USER_REQUESTS_SAMPLE_RATE', 1),
             'ignore' => [
-                '#^/'.env('PULSE_PATH', 'pulse').'$#', // Pulse dashboard...
-                '#^/telescope#', // Telescope dashboard...
+                '#^/'.env('PULSE_PATH', 'pulse').'$#', // Pulse dashboard.php...
+                '#^/telescope#', // Telescope dashboard.php...
             ],
         ],
     ],

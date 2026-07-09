@@ -12,9 +12,9 @@ final class OrderCreated extends BaseEvent
 
     public function __construct(
         public readonly Order      $order,
-        ?int       $sender_device_id   = null,
-        ?string    $sender_device_type = null,
-        ?string    $correlation_id     = null
+        ?int            $sender_device_id   = null,
+        ?string         $sender_device_type = null,
+        ?string         $correlation_id     = null
     ) {
         parent::__construct($sender_device_id, $sender_device_type, $correlation_id);
     }

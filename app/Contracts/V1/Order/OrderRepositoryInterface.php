@@ -19,4 +19,6 @@ interface OrderRepositoryInterface extends BaseRepositoryInterface
 
     public function paginateForDashboard(int $storeId, array $filters, int $perPage = 25, string $timezone = 'UTC'): LengthAwarePaginator;
 
+    public function countForDashboardByStatus(int $storeId, array $filters): array;
+
 }

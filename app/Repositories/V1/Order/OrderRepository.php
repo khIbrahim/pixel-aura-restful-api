@@ -8,6 +8,7 @@ use App\Enum\V1\Order\OrderStatus;
 use App\Models\V1\Order;
 use App\Repositories\V1\BaseRepository;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -64,18 +65,48 @@ class OrderRepository extends BaseRepository implements OrderRepositoryInterface
             ->get();
     }
 
+    public function countForDashboardByStatus(int $storeId, array $filters): array
+    {
+        $defaults = collect(OrderStatus::cases())
+            ->mapWithKeys(fn (OrderStatus $status) => [$status->value => 0])
+            ->all();
+
+        $counts = $this->dashboardQuery($storeId, $filters, false)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->map(fn ($total) => (int) $total)
+            ->all();
+
+        return array_replace($defaults, $counts);
+    }
+
     public function paginateForDashboard(int $storeId, array $filters, int $perPage = 25, string $timezone = 'UTC'): LengthAwarePaginator
     {
-        $query = $this->query()
-            ->where('store_id', $storeId)
+        $query = $this->dashboardQuery($storeId, $filters, true)
             ->with([
                 'items.item',
                 'creator',
                 'device'
             ]);
 
+        match($filters['sort'] ?? 'newest'){
+            'oldest'     => $query->orderBy('created_at')->orderBy('id'),
+            'total_desc' => $query->orderByDesc('total_cents')->orderByDesc('id'),
+            'total_asc'  => $query->orderBy('total_cents')->orderByDesc('id'),
+            default      => $query->orderByDesc('created_at')->orderByDesc('id'),
+        };
+
+        return $query->paginate($perPage);
+    }
+
+    private function dashboardQuery(int $storeId, array $filters, bool $applyStatusFilter = true): Builder
+    {
+        $query = $this->query()
+            ->where('store_id', $storeId);
+
         if(! empty($filters['search'])) {
-            $search = trim((string)$filters['search']);
+            $search = trim((string) $filters['search']);
 
             $query->where(function ($query) use ($search) {
                 $query
@@ -87,7 +118,7 @@ class OrderRepository extends BaseRepository implements OrderRepositoryInterface
             });
         }
 
-        if(! empty($filters['statuses'])){
+        if($applyStatusFilter && ! empty($filters['statuses'])){
             $query->whereIn('status', $filters['statuses']);
         }
 
@@ -107,13 +138,7 @@ class OrderRepository extends BaseRepository implements OrderRepositoryInterface
             $query->where('created_at', '<=', $filters['created_to']);
         }
 
-        match($filters['sort'] ?? 'newest'){
-            'oldest'     => $query->orderBy('created_at')->orderBy('id'),
-            'total_desc' => $query->orderByDesc('total_cents')->orderByDesc('id'),
-            'total_asc'  => $query->orderBy('total_cents')->orderByDesc('id'),
-            default      => $query->orderByDesc('created_at')->orderByDesc('id'),
-        };
-
-        return $query->paginate($perPage);
+        return $query;
     }
+
 }

@@ -31,6 +31,7 @@ class OrderController extends Controller
         $store     = $request->attributes->get('store');
         $validated = $request->validated();
         $perPage   = (int) ($validated['per_page'] ?? 25);
+        $timezone  = $store->timezone ?? config('app.timezone');
 
         unset($validated['page'], $validated['per_page']);
 
@@ -38,17 +39,24 @@ class OrderController extends Controller
             storeId:  (int) $store->id,
             filters:  $validated,
             perPage:  $perPage,
-            timezone: $store->timezone ?? config('app.timezone')
+            timezone: $timezone
+        );
+
+        $counts = $this->service->countForDashboardByStatus(
+            storeId:  (int) $store->id,
+            filters:  $validated,
+            timezone: $timezone
         );
 
         return response()->json([
-            'data' => OrderResource::collection($orders->getCollection()),
-            'meta' => [
+            'data'   => OrderResource::collection($orders->getCollection()),
+            'meta'   => [
                 'current_page' => $orders->currentPage(),
                 'per_page'     => $orders->perPage(),
                 'total'        => $orders->total(),
                 'last_page'    => $orders->lastPage(),
-            ]
+            ],
+            'counts' => $counts,
         ]);
     }
 
@@ -91,8 +99,8 @@ class OrderController extends Controller
             $storeId = (int) $request->attributes->get('store')->id;
 
             $updatedOrder = $this->statusService->transition(
-                storeId:  $storeId,
-                order:    $order,
+                storeId:   $storeId,
+                order:     $order,
                 newStatus: $request->status()
             );
 

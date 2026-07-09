@@ -8,6 +8,7 @@ use App\Http\Middleware\V1\Media\HasMediaMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -28,9 +29,10 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/catalog.php',
             __DIR__.'/../routes/orders.php',
             __DIR__.'/../routes/discounts.php',
+            __DIR__.'/../routes/notifications.php',
         ],
         commands: __DIR__.'/../routes/console.php',
-        channels: __DIR__.'/../routes/channels.php',
+//        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -41,8 +43,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'ability'         => CheckAbility::class,
             'store_member'    => EnsureStoreMember::class,
             'has_media'       => HasMediaMiddleware::class,
+            'cors'            => HandleCors::class,
         ]);
     })
+    ->withBroadcasting(
+        __DIR__.'/../routes/channels.php',
+        ['middleware' => ['auth:sanctum', 'auth:sanctum']]
+    )
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
