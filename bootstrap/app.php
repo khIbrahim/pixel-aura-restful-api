@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             __DIR__.'/../routes/orders.php',
             __DIR__.'/../routes/discounts.php',
             __DIR__.'/../routes/notifications.php',
+            __DIR__.'/../routes/dashboard.php',
         ],
         commands: __DIR__.'/../routes/console.php',
 //        channels: __DIR__.'/../routes/channels.php',

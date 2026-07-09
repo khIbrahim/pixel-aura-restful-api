@@ -3,6 +3,7 @@
 return [
     App\Providers\AppServiceProvider::class,
     App\Providers\CatalogServiceProvider::class,
+    \App\Providers\V1\DashboardServiceProvider::class,
     App\Providers\V1\CategoryServiceProvider::class,
     App\Providers\V1\DiscountServiceProvider::class,
     App\Providers\V1\ItemServiceProvider::class,
