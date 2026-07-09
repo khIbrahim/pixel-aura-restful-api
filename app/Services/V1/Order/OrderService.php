@@ -4,6 +4,7 @@ namespace App\Services\V1\Order;
 
 use App\Contracts\V1\Order\OrderRepositoryInterface;
 use App\Contracts\V1\Order\OrderServiceInterface;
+use App\Contracts\V1\Printing\PrintingServiceInterface;
 use App\DTO\V1\Order\OrderData;
 use App\Enum\V1\Order\OrderStatus;
 use App\Events\V1\Notification\NotificationCreated;
@@ -30,6 +31,7 @@ readonly class OrderService implements OrderServiceInterface
         private OrderNumberService          $numberService,
         private OrderPreparationService     $preparationService,
         private OrderNotificationService    $notificationService,
+        private PrintingServiceInterface    $printingService,
     ){}
 
     /**
@@ -73,6 +75,7 @@ readonly class OrderService implements OrderServiceInterface
             $notification = $this->notificationService->created($order, $event->event_id);
             broadcast($event)->toOthers();
             broadcast(new NotificationCreated($notification))->toOthers();
+            $this->printingService->printOrderCreatedTickets($order);
 
             return $order;
         } catch(Throwable $e){

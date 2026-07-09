@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -99,6 +100,11 @@ class Store extends Model
     public function optionLists(): HasMany
     {
         return $this->hasMany(OptionList::class);
+    }
+
+    public function printSettings(): HasOne
+    {
+        return $this->hasOne(StorePrintSettings::class);
     }
 
     public function isActive(): bool

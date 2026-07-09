@@ -24,7 +24,7 @@ class PrintOrderResource extends JsonResource
         return [
             'order_number' => $this->number,
             'order_type'   => $this->service_type->value,
-            'created_at'   => $this->created_at,
+            'created_at'   => $this->created_at?->toISOString(),
 
             'store'        => [
                 'name'     => $this->store->name,
@@ -37,7 +37,7 @@ class PrintOrderResource extends JsonResource
             'items'        => $this->whenLoaded('items', function() {
                 return $this->items->map(function(OrderItem $item) {
                     return [
-                        'name'        => $item->item->name,
+                        'name'        => $item->item_name ?? $item->item?->name,
                         'quantity'    => $item->quantity,
                         'unit_price'  => Money::ofMinor($item->base_price_cents, $this->currency)->formatted(),
                         'total_price' => Money::ofMinor($item->final_total_cents, $this->currency)->formatted(),
@@ -50,7 +50,7 @@ class PrintOrderResource extends JsonResource
                                 'price'    => Money::ofMinor($option['total_price_cents'] ?? 0, $this->currency)->formatted(),
                                 'action'   => ($option['quantity'] ?? 1) > 0 ? 'Add' : 'Remove',
                             ];
-                        }, $item->selected_options),
+                        }, $item->selected_options ?? []),
 
                         'ingredients' => array_map(function ($modification) {
                             return [
@@ -59,20 +59,22 @@ class PrintOrderResource extends JsonResource
                                 'quantity' => $modification['quantity'] ?? 0,
                                 'price'    => Money::ofMinor($modification['total_price_cents'] ?? 0, $this->currency)->formatted(),
                             ];
-                        }, $item->ingredient_modifications)
+                        }, $item->ingredient_modifications ?? [])
                     ];
                 })->toArray();
             }, []),
             'pricing'      => [
-                'subtotal' => $this->getMoney('subtotal_cents')->formatted(),
-                'tax'      => $this->getMoney('tax_cents')->formatted(),
-                'discount' => $this->getMoney('discount_cents')->formatted(),
-                'total'    => $this->getMoney('total_cents')->formatted(),
-                'currency' => $this->currency,
+                'subtotal'     => $this->getMoney('subtotal_cents')->formatted(),
+                'tax'          => $this->getMoney('tax_cents')->formatted(),
+                'discount'     => $this->getMoney('discount_cents')->formatted(),
+                'delivery_fee' => Money::ofMinor($this->delivery?->fee_cents ?? 0, $this->currency)->formatted(),
+                'total'        => $this->getMoney('total_cents')->formatted(),
+                'currency'     => $this->currency,
             ],
 
-            'special_instructions' => $this->special_instructions,
-            'creator'              => $this->creator->name,
+            'notes'          => $this->special_instructions,
+            'payement_method' => $this->metadata['payment_method'] ?? 'Cash',
+            'creator'        => $this->creator?->name,
 
             'print' => $this->printConfig
         ];

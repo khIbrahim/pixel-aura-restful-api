@@ -10,6 +10,7 @@ use App\Models\V1\Store;
 use App\Models\V1\StoreMember;
 use App\Providers\V1\CategoryServiceProvider;
 use App\Providers\V1\ItemServiceProvider;
+use App\Providers\V1\PrintingServiceProvider;
 use App\Providers\V1\RateLimitServiceProvider;
 use App\Providers\V1\StoreMemberAuthServiceProvider;
 use App\Providers\V1\StoreMemberServiceProvider;
@@ -35,6 +36,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->register(StoreServiceProvider::class);
         $this->app->register(CategoryServiceProvider::class);
         $this->app->register(ItemServiceProvider::class);
+        $this->app->register(PrintingServiceProvider::class);
         $this->app->register(StoreMemberServiceProvider::class);
         $this->app->register(StoreMemberAuthServiceProvider::class);
         $this->app->register(RateLimitServiceProvider::class);

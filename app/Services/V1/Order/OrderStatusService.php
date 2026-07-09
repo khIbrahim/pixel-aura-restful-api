@@ -4,6 +4,7 @@ namespace App\Services\V1\Order;
 
 use App\Contracts\V1\Order\OrderRepositoryInterface;
 use App\Contracts\V1\Order\OrderStatusServiceInterface;
+use App\Contracts\V1\Printing\PrintingServiceInterface;
 use App\Enum\V1\Order\OrderStatus;
 use App\Events\V1\Order\OrderStatusChanged;
 use App\Exceptions\V1\Order\InvalidOrderStatusTransitionException;
@@ -33,7 +34,8 @@ class OrderStatusService implements OrderStatusServiceInterface
 
     public function __construct(
         private readonly OrderRepositoryInterface $repository,
-        private readonly OrderPreparationService  $preparationService
+        private readonly OrderPreparationService  $preparationService,
+        private readonly PrintingServiceInterface $printingService
     ){}
 
     public function transition(int $storeId, Order $order, OrderStatus $newStatus): Order
@@ -111,6 +113,10 @@ class OrderStatusService implements OrderStatusServiceInterface
                 newStatus:       $newStatus,
                 preparationData: $updatedOrder->getPreparationData()
             ))->toOthers();
+
+            if($newStatus === OrderStatus::Preparing){
+                $this->printingService->printKitchenTicket($updatedOrder);
+            }
         }
 
         return $updatedOrder;

@@ -28,6 +28,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'print_service' => [
+        'base_url'      => env('PRINT_SERVICE_URL', 'http://host.docker.internal:8080'),
+        'timeout'       => env('PRINT_SERVICE_TIMEOUT', 10),
+        'print_path'    => env('PRINT_SERVICE_PRINT_PATH', '/print'),
+        'printers_path' => env('PRINT_SERVICE_PRINTERS_PATH', '/printers'),
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

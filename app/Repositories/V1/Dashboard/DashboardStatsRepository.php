@@ -24,10 +24,10 @@ class DashboardStatsRepository implements DashboardStatsRepositoryInterface
 
     public function sumRevenueCents(int $storeId, CarbonInterface $start, CarbonInterface $end): int
     {
-        return Order::query()
-            ->where('store_id')
+        return (int) Order::query()
+            ->where('store_id', $storeId)
             ->whereBetween('created_at', [$start, $end])
-            ->where('status', '!=', OrderStatus::Cancelled->value)
+            ->where('status', OrderStatus::Completed->value)
             ->sum('total_cents');
     }
 
