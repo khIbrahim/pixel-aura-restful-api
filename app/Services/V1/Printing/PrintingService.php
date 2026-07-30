@@ -48,7 +48,7 @@ readonly class PrintingService implements PrintingServiceInterface
 
     public function printOrderCreatedTickets(Order $order): void
     {
-        $settings = $this->settings((int) $order->store_id);
+        $settings = $this->settings($order->store_id);
         $types    = [];
 
         if($settings->auto_print_customer_on_order_created){
@@ -75,8 +75,20 @@ readonly class PrintingService implements PrintingServiceInterface
 
     private function printSafely(Order $order, array $types, string $trigger): void
     {
+        if(empty($types)){
+            return;
+        }
+
         try {
-            $this->printOrder($order, $types);
+            $response = $this->printOrder($order, $types);
+
+            Log::info("Impression automatique de la commande envoyée.", [
+                'order_id' => $order->id,
+                'store_id' => $order->store_id,
+                'types'    => $types,
+                'trigger'  => $trigger,
+                'response' => $response,
+            ]);
         } catch(Throwable $e){
             Log::warning("L'impression automatique de la commande a échoué.", [
                 'order_id'  => $order->id,
@@ -95,9 +107,9 @@ readonly class PrintingService implements PrintingServiceInterface
 
         foreach(array_unique($types) as $type){
             $printer = match($type){
-                'customer' => $settings->customer_printer_name,
-                'receipt'  => $settings->receipt_printer_name,
-                'kitchen'  => $settings->kitchen_printer_name,
+                'customer' => $settings->customer_printer_name ?? config('services.print_service.printers.customer') ?? config('services.print_service.default_printer'),
+                'receipt'  => $settings->receipt_printer_name ?? config('services.print_service.printers.receipt') ?? config('services.print_service.default_printer'),
+                'kitchen'  => $settings->kitchen_printer_name ?? config('services.print_service.printers.kitchen') ?? config('services.print_service.default_printer'),
                 default    => null,
             };
 

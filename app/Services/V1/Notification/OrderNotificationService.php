@@ -24,7 +24,7 @@ class OrderNotificationService
             'subject_id'     => $order->id,
             'subject_number' => $order->number,
             'action_url'     => '/orders',
-            'daata'          => [
+            'data'           => [
                 'order_id'     => $order->id,
                 'order_number' => $order->number,
                 'status'       => $order->status->value,

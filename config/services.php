@@ -29,10 +29,16 @@ return [
     ],
 
     'print_service' => [
-        'base_url'      => env('PRINT_SERVICE_URL', 'http://host.docker.internal:8080'),
-        'timeout'       => env('PRINT_SERVICE_TIMEOUT', 10),
-        'print_path'    => env('PRINT_SERVICE_PRINT_PATH', '/print'),
-        'printers_path' => env('PRINT_SERVICE_PRINTERS_PATH', '/printers'),
+        'base_url'        => env('PRINT_SERVICE_URL', 'http://host.docker.internal:8080'),
+        'timeout'         => env('PRINT_SERVICE_TIMEOUT', 3),
+        'print_path'      => env('PRINT_SERVICE_PRINT_PATH', '/print'),
+        'printers_path'   => env('PRINT_SERVICE_PRINTERS_PATH', '/printers'),
+        'default_printer' => env('PRINT_SERVICE_DEFAULT_PRINTER'),
+        'printers'        => [
+            'customer' => env('PRINT_SERVICE_CUSTOMER_PRINTER'),
+            'receipt'  => env('PRINT_SERVICE_RECEIPT_PRINTER'),
+            'kitchen'  => env('PRINT_SERVICE_KITCHEN_PRINTER'),
+        ],
     ],
 
     'slack' => [
